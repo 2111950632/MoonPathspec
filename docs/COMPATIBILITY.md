@@ -127,6 +127,11 @@ starting state. Step counts are deterministic work units, not elapsed-time or
 whole-process memory guarantees. Compilation, UTF-8 conversion, candidate
 validation, and callback work have their own bounded inputs and are not DP cells.
 An attribute callback is supplied by the caller and must itself terminate.
+Each `select` call snapshots its candidate array before validation and callbacks.
+Replacing, appending or clearing the caller's array during an attribute query
+cannot change that in-flight selection or bypass canonical/count/byte checks.
+Attribute values themselves remain caller-controlled; use a stable callback
+when reproducible results are required.
 
 ## Implementation and evidence status
 

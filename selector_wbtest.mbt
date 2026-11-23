@@ -477,3 +477,53 @@ test "path identity remains case sensitive even under icase selection" {
     }
   }
 }
+
+///|
+test "attribute callbacks cannot replace validated candidate paths" {
+  let plan = selector_plan([":(attr:ready)*"])
+  for replacement in ["../outside", "a", "overlong".repeat(3000)] {
+    let paths = ["a", "b"]
+    let result = selector_result(plan, paths, attribute=fn(path, _) {
+      if path == "a" {
+        paths[1] = replacement
+      }
+      Set
+    })
+    assert_eq(result.selected, ["a", "b"])
+    assert_eq(result.decisions.map(d => d.path), ["a", "b"])
+    assert_eq(paths[1], replacement)
+  }
+}
+
+///|
+test "attribute callbacks cannot append candidates past the original count" {
+  let plan = selector_plan([":(attr:ready)*"], limits={
+    ..default_limits(),
+    max_paths: 2,
+  })
+  let paths = ["a", "b"]
+  let result = selector_result(plan, paths, attribute=fn(path, _) {
+    if path == "a" {
+      paths.push("c")
+    }
+    Set
+  })
+  assert_eq(result.selected, ["a", "b"])
+  assert_eq(result.decisions.length(), 2)
+  assert_eq(paths, ["a", "b", "c"])
+}
+
+///|
+test "attribute callbacks cannot truncate the in-flight candidate snapshot" {
+  let plan = selector_plan([":(attr:ready)*"])
+  let paths = ["a", "b"]
+  let result = selector_result(plan, paths, attribute=fn(path, _) {
+    if path == "a" {
+      paths.clear()
+    }
+    Set
+  })
+  assert_eq(result.selected, ["a", "b"])
+  assert_eq(result.decisions.map(d => d.path), ["a", "b"])
+  assert_eq(paths, [])
+}

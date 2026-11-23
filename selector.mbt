@@ -347,6 +347,9 @@ pub fn select(
   if paths.length() > plan.limits.max_paths {
     return Err(selection_error("path_limit", "too many candidate paths"))
   }
+  // A caller callback can capture and mutate its input array. Validate and
+  // evaluate one private snapshot so later replacements cannot bypass checks.
+  let paths = paths[:].to_owned()
   let seen : Map[String, Bool] = Map([])
   for index, path in paths {
     if !ps_canonical_path(path) {
