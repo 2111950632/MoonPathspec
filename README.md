@@ -2,7 +2,7 @@
 
 MoonBit 原生 Git Pathspec 文件集合选择引擎。为构建工具、打包工具、变更影响分析和 CI 提供可嵌入的规则编译、路径选择及原因解释。维护者：石子硕（GitHub：2111950632）。当前开发版本：0.1.0。
 
-0.1.0 已完成本地构建、测试、Git 对照、真实打包消费与独立分发运行验证，见 [验证记录](evidence/validation-0.1.0.json)。GitHub 公开上传、线上 CI 和 Mooncakes 发布仍待完成；下方仓库与安装命令是发布后的使用入口。
+0.1.0 已公开上传 GitHub，并通过 [Linux 与 Windows 线上完整验证](https://github.com/2111950632/MoonPathspec/actions/runs/45119787573)：构建、两种后端测试、Git 对照、真实打包消费及独立分发运行均成功。[本地验证记录](evidence/validation-0.1.0.json)与[线上核验记录](evidence/github-validation-0.1.0.json)分别保留。Mooncakes 尚未发布，安装命令待注册表发布后可用。
 
 核心由 MoonBit 实现，调用者提供仓库相对文件路径和属性查询函数。Node.js 只负责命令行、文件输入输出和运行编译产物。运行时不调用 Git，不读取 Git index，不遍历仓库，不自行解析 `.gitattributes`。Git 只作为独立测试参考。
 
@@ -95,7 +95,7 @@ python tests/git_oracle.py
 
 `npm run verify` 顺序完成上述检查，以及真实 `moon package` 解包后的独立公共 API 消费和 JS 分发包生成。生成的 `dist/` 可以单独复制并以 Node 运行，验证还会把它复制到源码树外实际执行。可用 `MOONPATHSPEC_MOON`、`MOONPATHSPEC_PYTHON`、`MOONPATHSPEC_GIT` 指定工具路径。缺少工具、Git 不一致、预算错误或构建失败都会停止，不会跳过后宣称通过。
 
-Git 对照脚本创建临时仓库，逐次调用 `git ls-files --full-name -z`；固定案例和固定种子生成案例均由独立 Git 得到预期，不调用生产 matcher 造答案。支持范围内等价案例与明确范围拒绝案例分开计数，报告保留 Git 实际结果、版本、输入摘要和失败详情。CI 在 Linux 与 Windows 运行。
+Git 对照脚本创建临时仓库，逐次调用 `git ls-files --full-name -z`；固定案例和固定种子生成案例均由独立 Git 得到预期，不调用生产 matcher 造答案。支持范围内等价案例与明确范围拒绝案例分开计数，报告保留 Git 实际结果、版本、输入摘要和失败详情。CI 已在 Linux 与 Windows 两个平台完成首次完整验证。
 
 `scripts/check-consumer.py` 从真实发布 ZIP 提取源码并建立单独消费项目；这是打包使用验证，不能冒充 Mooncakes 网络下载验证。`node scripts/count-source.mjs` 将生产 MoonBit、测试分开统计，结果不是组委会认证的有效代码行。
 

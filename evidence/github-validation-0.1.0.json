@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "kind": "verified-github-actions-result",
+  "client_date": "2026-11-23",
+  "version": "0.1.0",
+  "repository": "https://github.com/2111950632/MoonPathspec",
+  "visibility": "public",
+  "default_branch": "main",
+  "commit": "c63b83dec438a668df877d5d936d3ec8376a1208",
+  "git_tree": "616a5bb91668b222ee9c051678d79fe75e899433",
+  "same_git_tree_as_validated_local_commit": true,
+  "run_id": 45119787573,
+  "run_url": "https://github.com/2111950632/MoonPathspec/actions/runs/45119787573",
+  "status": "completed",
+  "conclusion": "success",
+  "moonc": "v0.10.22+124d61d05",
+  "jobs": [
+    {
+      "id": 137510684759,
+      "name": "validate (ubuntu-24.04)",
+      "conclusion": "success",
+      "fixture_sha256": "d386286928c575ab4f9ac6070b2eb1588414f8e4f7a04cc71e82692e426bbd4c"
+    },
+    {
+      "id": 137510685228,
+      "name": "validate (windows-latest)",
+      "conclusion": "success",
+      "fixture_sha256": "1ab361ac97003e6abebea2bd4f7f48a548d1d77849398de682ac2387bacd77ad"
+    }
+  ],
+  "verified_in_each_job": {
+    "moonbit_js_tests": 62,
+    "moonbit_wasm_gc_tests": 62,
+    "cli_tests": 19,
+    "git_differential_cases": 404,
+    "explicit_profile_rejection_cases": 20,
+    "independent_public_api_consumer_own_tests_per_backend": 4,
+    "standalone_node_distribution": true,
+    "all_verification_steps_passed": true
+  },
+  "notes": [
+    "GitHub API job results and decoded logs were read after completion.",
+    "Fixture file byte hashes differ with checkout line endings; actual Git differential results passed on both platforms.",
+    "The local validation snapshot records its original time and does not claim it verified these later online steps.",
+    "Mooncakes publication and official organizer approval remain separate."
+  ]
+}
