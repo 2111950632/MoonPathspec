@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "kind": "local-validation-snapshot",
+  "version": "0.1.1",
+  "client_date": "2026-11-23",
+  "platform": "Windows x86_64",
+  "verification": {
+    "schema_version": 1,
+    "run_id": "84f1b07b-4f58-46db-8f6a-ed1f51e2e3e8",
+    "started_at": "2026-11-23T07:22:36.054Z",
+    "updated_at": "2026-11-23T07:23:13.101Z",
+    "client_date": "2026-11-23",
+    "toolchain": "moon 0.1.20261119 (738607b 2026-11-19) ~\\Documents\\Codex\\2026-11-23\\moonbit-november\\toolchain-current\\bin\\moon.exe\nmoonc v0.10.22+124d61d05 (2026-11-19) ~\\Documents\\Codex\\2026-11-23\\moonbit-november\\toolchain-current\\bin\\moonc.exe\nmoonrun 0.1.20261119 (738607b 2026-11-19) ~\\Documents\\Codex\\2026-11-23\\moonbit-november\\toolchain-current\\bin\\moonrun.exe",
+    "steps": [
+      {
+        "step": "scripts/check-release.mjs",
+        "exit_code": 0
+      },
+      {
+        "step": "check --target all --deny-warn",
+        "exit_code": 0
+      },
+      {
+        "step": "test --target js --deny-warn",
+        "exit_code": 0
+      },
+      {
+        "step": "test --target wasm-gc --deny-warn",
+        "exit_code": 0
+      },
+      {
+        "step": "fmt --check",
+        "exit_code": 0
+      },
+      {
+        "step": "info",
+        "exit_code": 0
+      },
+      {
+        "step": "scripts/check-interface.mjs C:\\Users\\Lenovo\\Documents\\Codex\\2026-11-23\\moonbit-november\\MoonPathspec\\evidence\\local\\interface-before.mbti",
+        "exit_code": 0
+      },
+      {
+        "step": "build --target js --release --deny-warn",
+        "exit_code": 0
+      },
+      {
+        "step": "--test tests/integration.mjs tests/host_io.mjs tests/scenarios.mjs tests/distribution.mjs tests/verification.mjs",
+        "exit_code": 0
+      },
+      {
+        "step": "tests/git_oracle.py --node C:\\Users\\Lenovo\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe --git C:\\Users\\Lenovo\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\git\\cmd\\git.exe",
+        "exit_code": 0
+      },
+      {
+        "step": "package",
+        "exit_code": 0
+      },
+      {
+        "step": "scripts/check-consumer.py --moon C:\\Users\\Lenovo\\Documents\\Codex\\2026-11-23\\moonbit-november\\toolchain-current\\bin\\moon.exe",
+        "exit_code": 0
+      },
+      {
+        "step": "scripts/package.mjs",
+        "exit_code": 0
+      },
+      {
+        "step": "scripts/check-dist.mjs",
+        "exit_code": 0
+      }
+    ],
+    "passed": true,
+    "status": "passed"
+  },
+  "tests": {
+    "moonbit_js": {
+      "passed": 65,
+      "failed": 0
+    },
+    "moonbit_wasm_gc": {
+      "passed": 65,
+      "failed": 0
+    },
+    "node": {
+      "passed": 34,
+      "failed": 0
+    },
+    "git_differential": {
+      "passed": 424,
+      "total": 424
+    },
+    "explicit_profile_rejections": {
+      "passed": 20,
+      "total": 20
+    },
+    "packaged_public_api_consumer": {
+      "own_tests_per_target": 5,
+      "targets": [
+        "js",
+        "wasm-gc"
+      ],
+      "passed": true
+    },
+    "standalone_distribution": {
+      "inventory_and_sha256_verified": true,
+      "outside_source_tree": true,
+      "passed": true
+    }
+  },
+  "oracle_inputs": {
+    "git_version": "git version 2.56.0.windows.4",
+    "seed": 20261123,
+    "fixed_cases": 184,
+    "generated_cases": 260,
+    "candidate_paths": 58,
+    "fixture_sha256": "8a78a5b6da1af0051ef8fe4cb5ba497bb5cd6f92a2e8fb0ed15d836a47587042",
+    "oracle_results_sha256": "9e9f82264620be4bb12534757bd66e69fc074a00a31233cbff3fccab1890f93d"
+  },
+  "production_snapshot": [
+    {
+      "file": "model.mbt",
+      "sha256": "eeecbcc69cbe2952930e581c9324e2ddb1ee36811d3ce66623c9030d27165f54"
+    },
+    {
+      "file": "public_methods.mbt",
+      "sha256": "a5e9130470f57e04cd815bb4d2ef07af6b32b0d3e21e1eb1b8d0c50118a77218"
+    },
+    {
+      "file": "parser.mbt",
+      "sha256": "3cb8374009ecb4095ac51139996c03670f5dfa4f5b4cafd4227ed8e3a4d21054"
+    },
+    {
+      "file": "glob.mbt",
+      "sha256": "c1e314ec5d453a3bf80df8325aec98fe53acd950d80a7230dd242cd46bf2cc6e"
+    },
+    {
+      "file": "selector.mbt",
+      "sha256": "679a7b1bc65cdfa10af873f7a4e20f1ea0e2f7048ac3885f19967d6beb495ec7"
+    },
+    {
+      "file": "protocol.mbt",
+      "sha256": "4c8a39e29d22db7a346769ea819cd0ef41a1637f37ea98978e6b1f3ead061729"
+    },
+    {
+      "file": "cmd/bridge/main.mbt",
+      "sha256": "805f59778d31867160d31294f09ba94ac8943bd9ad2b0713c298914d45950a45"
+    },
+    {
+      "file": "moon.mod",
+      "sha256": "c131cee3e5be7adea2326ad4feff4b07f471b28b650fd11a9a14f5fd655a4e3d"
+    },
+    {
+      "file": "moon.pkg",
+      "sha256": "37d23ac502480bbe3be72ebe979f5cb733b9fcff24efd741ebb44e24256b6464"
+    },
+    {
+      "file": "cmd/bridge/moon.pkg",
+      "sha256": "d8f7e78e880622905ba4ced43ae7b7ddcbff576c6390d39c4301ac5676cefd0c"
+    },
+    {
+      "file": "pkg.generated.mbti",
+      "sha256": "26ea31f44088fae5a78bd3fef41fd98b45bfd848ceb7f7831912bbd07d287c0d"
+    }
+  ],
+  "external_steps_not_verified_by_this_local_snapshot": [
+    "GitHub CI for this revision",
+    "Mooncakes 0.1.1 publication and actual registry download"
+  ],
+  "reproduce": "npm run verify"
+}

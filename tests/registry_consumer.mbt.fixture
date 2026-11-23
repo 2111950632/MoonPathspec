@@ -73,6 +73,21 @@ fn registry_field(value : Json, name : String) -> Json {
 }
 
 ///|
+test "registry public selection snapshots candidates before callbacks" {
+  let paths = ["a", "b"]
+  let plan = @moonpathspec.compile([":(attr:ready)*"]).unwrap()
+  let result = @moonpathspec.select(plan, paths, attribute=fn(path, _) {
+    if path == "a" {
+      paths[1] = "../outside"
+    }
+    @moonpathspec.AttributeValue::Set
+  }).unwrap()
+  assert_eq(result.selected, ["a", "b"])
+  assert_eq(result.decisions.map(d => d.path), ["a", "b"])
+  assert_eq(paths, ["a", "../outside"])
+}
+
+///|
 test "registry public errors budgets and JSON bridge fail without partial data" {
   match @moonpathspec.compile(["valid", ":(attr:a=值)x"]) {
     Ok(_) => abort("expected invalid attribute")

@@ -1,6 +1,6 @@
 # MoonPathspec
 
-MoonBit 原生 Git Pathspec 文件集合选择引擎。为构建工具、打包工具、变更影响分析和 CI 提供可嵌入的规则编译、路径选择及原因解释。维护者：石子硕（GitHub：2111950632）。当前版本：0.1.0。
+MoonBit 原生 Git Pathspec 文件集合选择引擎。为构建工具、打包工具、变更影响分析和 CI 提供可嵌入的规则编译、路径选择及原因解释。维护者：石子硕（GitHub：2111950632）。当前代码版本：0.1.1。[更新记录](CHANGELOG.md)。
 
 0.1.0 已公开上传 GitHub，并通过 [Linux 与 Windows 线上完整验证](https://github.com/2111950632/MoonPathspec/actions/runs/45119787573)：构建、两种后端测试、Git 对照、真实打包消费及独立分发运行均成功。[本地验证记录](evidence/validation-0.1.0.json)与[线上核验记录](evidence/github-validation-0.1.0.json)分别保留。[Mooncakes 0.1.0](https://mooncakes.io/docs/2111950632/moonpathspec) 已发布；独立项目实际下载后，JavaScript 与 Wasm GC 各 4 项公开接口测试通过，7 个生产 MoonBit 源文件及 4 个清单/接口文件与本地逐字节一致，见 [发布与下载验证](evidence/mooncakes-validation-0.1.0.json)。
 
@@ -97,6 +97,8 @@ let reason = @moonpathspec.explain(plan, "vendor/a.mbt").unwrap()
 
 ## 验证
 
+0.1.1 [完整本地验证](evidence/validation-0.1.1.json)：JS 与 Wasm GC 各 65 项核心测试、34 项 Node 集成/边界/场景/分发测试、424 项 Git 等价对照及另计的 20 项范围拒绝全部通过。实际包解压后的独立消费在两种后端各通过 5 项公开 API 测试。网络发布与线上 CI 以各自记录为准。
+
 ```sh
 moon check --target all --deny-warn
 moon test --target js --deny-warn
@@ -104,7 +106,7 @@ moon test --target wasm-gc --deny-warn
 moon fmt --check
 moon info
 moon build --target js --release --deny-warn
-node --test tests/integration.mjs
+npm test
 python tests/git_oracle.py
 ```
 

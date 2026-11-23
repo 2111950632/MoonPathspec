@@ -41,37 +41,12 @@ def main():
     consumer.mkdir()
     (folder / 'moon.work').write_text('members = ["' + module.relative_to(folder).as_posix() + '", "consumer"]\n', encoding='utf8')
     (consumer / 'moon.mod').write_text('name = "moonpathspec-validation/consumer"\nversion = "0.1.0"\nimport { "2111950632/moonpathspec@' + version + '" }\n', encoding='utf8')
-    (consumer / 'moon.pkg').write_text('import { "2111950632/moonpathspec" } for "test"\n', encoding='utf8')
-    (consumer / 'consumer_test.mbt').write_text('''test "public selection and explanation" {
-  let plan = @moonpathspec.compile([":(glob)**/*.mbt", ":(exclude)vendor"]).unwrap()
-  let result = @moonpathspec.select(plan, ["main.mbt", "src/a.mbt", "vendor/a.mbt"]).unwrap()
-  assert_eq(result.selected, ["main.mbt", "src/a.mbt"])
-  let decision = @moonpathspec.explain(plan, "vendor/a.mbt").unwrap()
-  assert_eq(decision.selected, false)
-  assert_eq(decision.excluded_by, [1])
-}
-test "public four-state attributes" {
-  let plan = @moonpathspec.compile([":(attr:publish -generated)src"]).unwrap()
-  let result = @moonpathspec.select(plan, ["src/a"], attribute=fn(_, name) {
-    if name == "publish" { @moonpathspec.AttributeValue::Set } else { @moonpathspec.AttributeValue::Unset }
-  }).unwrap()
-  assert_eq(result.selected, ["src/a"])
-}
-test "public parser and explicit unsupported diagnostics" {
-  assert_eq(@moonpathspec.parse_pattern(":(top,literal)x").unwrap().magic.top, true)
-  assert_true(@moonpathspec.compile([":(unknown)x"]) is Err(_))
-  assert_true(@moonpathspec.compile(["x\\\\*"]) is Err(_))
-}
-test "public protocol and budgets" {
-  let plan = @moonpathspec.compile(["*"], limits={ ..@moonpathspec.default_limits(), max_match_steps: 1 }).unwrap()
-  assert_true(@moonpathspec.select(plan, ["long-name"]) is Err(_))
-  let response = @moonpathspec.dispatch("{\\"patterns\\":[\\"a\\"],\\"paths\\":[\\"a\\",\\"b\\"]}")
-  assert_true(response.contains("selected"))
-}
-''', encoding='utf8')
+    (consumer / 'moon.pkg').write_text('import { "2111950632/moonpathspec", "moonbitlang/core/json" } for "test"\n', encoding='utf8')
+    fixture = ROOT / 'tests/registry_consumer.mbt.fixture'
+    (consumer / 'consumer_test.mbt').write_text(fixture.read_text(encoding='utf8'), encoding='utf8')
     for target in ['js', 'wasm-gc']:
         subprocess.run([args.moon, 'test', '--target', target, '--deny-warn'], cwd=consumer, check=True, timeout=180)
-    print('Real packaged public-API consumer passed on JS and Wasm GC (4 own tests per target).')
+    print('Real packaged public-API consumer passed on JS and Wasm GC (5 own tests per target).')
 
 if __name__ == '__main__':
     main()

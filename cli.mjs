@@ -2,7 +2,7 @@
 import { invoke } from './host.mjs';
 import { readText } from './io.mjs';
 
-const help = `MoonPathspec 0.1.0
+const help = `MoonPathspec 0.1.1
 Usage: node cli.mjs [select|explain|inspect] [options] -- PATTERN...
   --input FILE       JSON request manifest (use - for stdin)
   --paths FILE       UTF-8 file of candidate paths, one per line
@@ -29,7 +29,7 @@ try {
     const arg = args[i];
     if (arg === '--') { patterns.push(...args.slice(i + 1)); break; }
     if (arg === '--help') { process.stdout.write(help); process.exit(0); }
-    if (arg === '--version') { process.stdout.write('0.1.0\n'); process.exit(0); }
+    if (arg === '--version') { process.stdout.write('0.1.1\n'); process.exit(0); }
     if (['--input','--paths','--attributes','--limits','--prefix','--path'].includes(arg)) {
       if (i + 1 >= args.length) throw new Error(`Missing value for ${arg}`);
       const value = args[++i];

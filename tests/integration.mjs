@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, rmSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { invoke } from '../host.mjs';
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
+const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
 function cli(args, input) { return spawnSync(process.execPath, ['cli.mjs', ...args], { cwd: root, input, encoding: 'utf8', timeout: 30000 }); }
 function json(args, input) {
   const separator = args.indexOf('--');
@@ -91,7 +92,7 @@ test('invalid duplicate paths and invalid limits fail', () => {
   assert.equal(invoke({patterns:[],paths:[],limits:{max_paths:1.5}}).error.code,'invalid_request');
 });
 test('help, version and empty file sets work without silent failures', () => {
-  assert.equal(cli(['--version']).stdout,'0.1.0\n'); assert.match(cli(['--help']).stdout,/Usage:/);
+  assert.equal(cli(['--version']).stdout,version+'\n'); assert.match(cli(['--help']).stdout,/Usage:/);
   const r=json([]); assert.equal(r.status,0); assert.deepEqual(r.data.selected,[]);
 });
 test('option-like filenames after the separator remain patterns', () => {
