@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "kind": "published-release-and-independent-registry-consumption",
+  "client_date": "2026-11-23",
+  "module": "2111950632/moonpathspec",
+  "version": "0.1.1",
+  "publisher_account": "2111950632",
+  "registry_url": "https://mooncakes.io/docs/2111950632/moonpathspec",
+  "manifest_url": "https://mooncakes.io/api/v0/manifest/2111950632/moonpathspec@0.1.1",
+  "publication": {
+    "command": "moon publish",
+    "exit_code": 0,
+    "server_status": "200 OK",
+    "created_at": "2026-11-23T15:26:27.584597+08:00",
+    "source_commit": "ffc0c0c36d796dc7f8268a5972ed27d440be5e2f",
+    "archive_sha256": "283c2057fa9b46351eb1435eba5ee55d7c936a45182cfb5e2bc7c2d44d7fa91f",
+    "registry_checksum": "283c2057fa9b46351eb1435eba5ee55d7c936a45182cfb5e2bc7c2d44d7fa91f",
+    "archive_matches_registry_checksum": true,
+    "yanked": false
+  },
+  "independent_registry_consumer": {
+    "new_sibling_project": true,
+    "workspace_or_ancestor_workspace_present": false,
+    "local_dependency_override": false,
+    "dependency_origin": "Official Mooncakes registry; actual CLI download confirmed",
+    "initial_environment": "MOON_REGISTRY_API=1",
+    "initial_js_passed": 5,
+    "initial_wasm_gc_passed": 5,
+    "default_cli_recheck": {
+      "MOON_REGISTRY_API": "unset",
+      "refresh": "moon update succeeded; a refresh was required after the new publication",
+      "js_passed": 5,
+      "wasm_gc_passed": 5,
+      "failed": 0,
+      "reuses_real_downloaded_registry_cache": true
+    },
+    "test_fixture": "tests/registry_consumer.mbt.fixture",
+    "test_fixture_sha256": "b2921003a4378959536725218bd8b012fa5a9654fa9d32844840e89b062b21f3",
+    "module_manifest": "name = \"moonpathspec-validation/registry-consumer\"\nversion = \"0.1.0\"\nimport { \"2111950632/moonpathspec@0.1.1\" }\n",
+    "package_manifest": "import { \"2111950632/moonpathspec\", \"moonbitlang/core/json\" } for \"test\"\n",
+    "test_commands": [
+      "moon update",
+      "moon test --target js --deny-warn",
+      "moon test --target wasm-gc --deny-warn"
+    ]
+  },
+  "source_comparison": {
+    "scope": "7 production MoonBit sources and 4 manifests/interface files",
+    "files_compared": 11,
+    "all_compared_files_identical": true,
+    "files": [
+      {
+        "file": "model.mbt",
+        "source_sha256": "eeecbcc69cbe2952930e581c9324e2ddb1ee36811d3ce66623c9030d27165f54",
+        "downloaded_sha256": "eeecbcc69cbe2952930e581c9324e2ddb1ee36811d3ce66623c9030d27165f54",
+        "identical": true
+      },
+      {
+        "file": "public_methods.mbt",
+        "source_sha256": "a5e9130470f57e04cd815bb4d2ef07af6b32b0d3e21e1eb1b8d0c50118a77218",
+        "downloaded_sha256": "a5e9130470f57e04cd815bb4d2ef07af6b32b0d3e21e1eb1b8d0c50118a77218",
+        "identical": true
+      },
+      {
+        "file": "parser.mbt",
+        "source_sha256": "3cb8374009ecb4095ac51139996c03670f5dfa4f5b4cafd4227ed8e3a4d21054",
+        "downloaded_sha256": "3cb8374009ecb4095ac51139996c03670f5dfa4f5b4cafd4227ed8e3a4d21054",
+        "identical": true
+      },
+      {
+        "file": "glob.mbt",
+        "source_sha256": "c1e314ec5d453a3bf80df8325aec98fe53acd950d80a7230dd242cd46bf2cc6e",
+        "downloaded_sha256": "c1e314ec5d453a3bf80df8325aec98fe53acd950d80a7230dd242cd46bf2cc6e",
+        "identical": true
+      },
+      {
+        "file": "selector.mbt",
+        "source_sha256": "679a7b1bc65cdfa10af873f7a4e20f1ea0e2f7048ac3885f19967d6beb495ec7",
+        "downloaded_sha256": "679a7b1bc65cdfa10af873f7a4e20f1ea0e2f7048ac3885f19967d6beb495ec7",
+        "identical": true
+      },
+      {
+        "file": "protocol.mbt",
+        "source_sha256": "4c8a39e29d22db7a346769ea819cd0ef41a1637f37ea98978e6b1f3ead061729",
+        "downloaded_sha256": "4c8a39e29d22db7a346769ea819cd0ef41a1637f37ea98978e6b1f3ead061729",
+        "identical": true
+      },
+      {
+        "file": "cmd/bridge/main.mbt",
+        "source_sha256": "805f59778d31867160d31294f09ba94ac8943bd9ad2b0713c298914d45950a45",
+        "downloaded_sha256": "805f59778d31867160d31294f09ba94ac8943bd9ad2b0713c298914d45950a45",
+        "identical": true
+      },
+      {
+        "file": "moon.mod",
+        "source_sha256": "c131cee3e5be7adea2326ad4feff4b07f471b28b650fd11a9a14f5fd655a4e3d",
+        "downloaded_sha256": "c131cee3e5be7adea2326ad4feff4b07f471b28b650fd11a9a14f5fd655a4e3d",
+        "identical": true
+      },
+      {
+        "file": "moon.pkg",
+        "source_sha256": "37d23ac502480bbe3be72ebe979f5cb733b9fcff24efd741ebb44e24256b6464",
+        "downloaded_sha256": "37d23ac502480bbe3be72ebe979f5cb733b9fcff24efd741ebb44e24256b6464",
+        "identical": true
+      },
+      {
+        "file": "cmd/bridge/moon.pkg",
+        "source_sha256": "d8f7e78e880622905ba4ced43ae7b7ddcbff576c6390d39c4301ac5676cefd0c",
+        "downloaded_sha256": "d8f7e78e880622905ba4ced43ae7b7ddcbff576c6390d39c4301ac5676cefd0c",
+        "identical": true
+      },
+      {
+        "file": "pkg.generated.mbti",
+        "source_sha256": "26ea31f44088fae5a78bd3fef41fd98b45bfd848ceb7f7831912bbd07d287c0d",
+        "downloaded_sha256": "26ea31f44088fae5a78bd3fef41fd98b45bfd848ceb7f7831912bbd07d287c0d",
+        "identical": true
+      }
+    ]
+  },
+  "limits": [
+    "Does not establish organizer approval",
+    "Published source predates later documentation-only commits"
+  ]
+}

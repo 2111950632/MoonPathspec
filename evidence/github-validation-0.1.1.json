@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "kind": "public-github-two-platform-verification",
+  "client_date": "2026-11-23",
+  "version": "0.1.1",
+  "repository": "https://github.com/2111950632/MoonPathspec",
+  "source_commit": "ffc0c0c36d796dc7f8268a5972ed27d440be5e2f",
+  "workflow_run": {
+    "id": 45131357219,
+    "url": "https://github.com/2111950632/MoonPathspec/actions/runs/45131357219",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "jobs": [
+    {
+      "id": 137547370924,
+      "name": "validate (ubuntu-24.04)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/2111950632/MoonPathspec/actions/runs/45131357219/job/137547370924",
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install MoonBit on Linux",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install MoonBit on Windows",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Check, build, test, compare with Git and consume real package",
+          "conclusion": "success"
+        },
+        {
+          "name": "Record source counts",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 137547371407,
+      "name": "validate (windows-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/2111950632/MoonPathspec/actions/runs/45131357219/job/137547371407",
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install MoonBit on Linux",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Install MoonBit on Windows",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check, build, test, compare with Git and consume real package",
+          "conclusion": "success"
+        },
+        {
+          "name": "Record source counts",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "scope": "All verification steps ran on Linux and Windows; includes check, build, both MoonBit backends, Node regression/scenario/distribution tests, independent Git, current package consumer and standalone distribution.",
+  "limits": [
+    "Historical evidence for the named source commit; later documentation commits have their own workflow runs.",
+    "Not an organizer review result."
+  ]
+}

@@ -2,9 +2,11 @@
 
 MoonBit 原生 Git Pathspec 文件集合选择引擎。为构建工具、打包工具、变更影响分析和 CI 提供可嵌入的规则编译、路径选择及原因解释。维护者：石子硕（GitHub：2111950632）。当前代码版本：0.1.1。[更新记录](CHANGELOG.md)。
 
-0.1.0 已公开上传 GitHub，并通过 [Linux 与 Windows 线上完整验证](https://github.com/2111950632/MoonPathspec/actions/runs/45119787573)：构建、两种后端测试、Git 对照、真实打包消费及独立分发运行均成功。[本地验证记录](evidence/validation-0.1.0.json)与[线上核验记录](evidence/github-validation-0.1.0.json)分别保留。[Mooncakes 0.1.0](https://mooncakes.io/docs/2111950632/moonpathspec) 已发布；独立项目实际下载后，JavaScript 与 Wasm GC 各 4 项公开接口测试通过，7 个生产 MoonBit 源文件及 4 个清单/接口文件与本地逐字节一致，见 [发布与下载验证](evidence/mooncakes-validation-0.1.0.json)。
+0.1.1 已通过 [Linux 与 Windows 完整线上验证](https://github.com/2111950632/MoonPathspec/actions/runs/45131357219)，并发布至 [Mooncakes](https://mooncakes.io/docs/2111950632/moonpathspec%400.1.1)。仓库外独立项目实际下载后，JavaScript 与 Wasm GC 各 5 项公开 API 测试通过，7 个生产 MoonBit 源文件及 4 个清单/接口文件逐字节一致。见 [本地验证](evidence/validation-0.1.1.json)、[线上核验](evidence/github-validation-0.1.1.json)及[发布与下载验证](evidence/mooncakes-validation-0.1.1.json)。0.1.0 历史记录保留在 evidence 中。
 
 核心由 MoonBit 实现，调用者提供仓库相对文件路径和属性查询函数。Node.js 只负责命令行、文件输入输出和运行编译产物。运行时不调用 Git，不读取 Git index，不遍历仓库，不自行解析 `.gitattributes`。Git 只作为独立测试参考。
+
+一页 [项目申报书](项目申报书.md) 包含目标、现有基础、增量、实现范围、验证与后续计划。
 
 ## 相对已有生态的增量
 
@@ -60,7 +62,7 @@ node cli.mjs explain --input examples/ci-package/release.json
 
 ## MoonBit API
 
-从 Mooncakes 安装：`moon add 2111950632/moonpathspec`。在消费项目的 `moon.pkg` 中导入 `"2111950632/moonpathspec"`，即可通过 `@moonpathspec` 调用下述公开 API。
+从 Mooncakes 安装：`moon add 2111950632/moonpathspec`。若本地索引尚未包含刚发布的版本，先运行 `moon update` 后重试。在消费项目的 `moon.pkg` 中导入 `"2111950632/moonpathspec"`，即可通过 `@moonpathspec` 调用下述公开 API。
 
 ```moonbit
 let plan = @moonpathspec.compile([
