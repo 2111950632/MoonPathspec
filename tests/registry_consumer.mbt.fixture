@@ -1,0 +1,113 @@
+///|
+test "registry public include exclude wildcard distinction and explanation" {
+  let paths = [
+    "main.mbt", "src/a.mbt", "src/sub/b.mbt", "vendor/a.mbt", "README.md",
+  ]
+  let plan = @moonpathspec.compile(["*.mbt", ":(exclude)vendor"]).unwrap()
+  assert_eq(@moonpathspec.select(plan, paths).unwrap().selected, [
+    "main.mbt", "src/a.mbt", "src/sub/b.mbt",
+  ])
+  let glob = @moonpathspec.compile([":(glob)src/*.mbt"]).unwrap()
+  assert_eq(@moonpathspec.select(glob, paths).unwrap().selected, ["src/a.mbt"])
+  let reason = @moonpathspec.explain(plan, "vendor/a.mbt").unwrap()
+  assert_eq(reason.selected, false)
+  assert_eq(reason.included_by, [0])
+  assert_eq(reason.excluded_by, [1])
+  assert_eq(reason.reason, "excluded_by_pattern")
+}
+
+///|
+test "registry public prefix literal top and plan input independence" {
+  let patterns = [":(literal)a[1].mbt"]
+  let plan = @moonpathspec.compile(patterns, prefix="src/./sub/..").unwrap()
+  patterns[0] = "missing"
+  let paths = ["a[1].mbt", "src/a[1].mbt", "src/a1.mbt", "src/sub/a[1].mbt"]
+  assert_eq(@moonpathspec.select(plan, paths).unwrap().selected, [
+    "src/a[1].mbt",
+  ])
+  let top = @moonpathspec.compile([":(top,literal)a[1].mbt"], prefix="src").unwrap()
+  assert_eq(@moonpathspec.select(top, paths).unwrap().selected, ["a[1].mbt"])
+  let parsed = @moonpathspec.parse_pattern(":(top,literal)a[1].mbt").unwrap()
+  assert_eq(parsed.magic.top, true)
+  assert_eq(parsed.magic.literal, true)
+  assert_eq(parsed.pattern, "a[1].mbt")
+}
+
+///|
+test "registry public attributes retain all four states and empty strings" {
+  let paths = ["set", "unset", "value", "empty", "missing"]
+  let attribute = fn(path, name) {
+    if name != "state" {
+      return @moonpathspec.AttributeValue::Unspecified
+    }
+    match path {
+      "set" => @moonpathspec.AttributeValue::Set
+      "unset" => @moonpathspec.AttributeValue::Unset
+      "value" => @moonpathspec.AttributeValue::Value("ready")
+      "empty" => @moonpathspec.AttributeValue::Value("")
+      _ => @moonpathspec.AttributeValue::Unspecified
+    }
+  }
+  for
+    (pattern, expected) in [
+      (":(attr:state)*", ["set"]),
+      (":(attr:-state)*", ["unset"]),
+      (":(attr:state=ready)*", ["value"]),
+      (":(attr:state=)*", ["empty"]),
+      (":(attr:!state)*", ["missing"]),
+    ] {
+    let plan = @moonpathspec.compile([pattern]).unwrap()
+    assert_eq(
+      @moonpathspec.select(plan, paths, attribute~).unwrap().selected,
+      expected,
+    )
+  }
+}
+
+///|
+fn registry_field(value : Json, name : String) -> Json {
+  match value {
+    Object(fields) => fields.get(name).unwrap()
+    _ => abort("expected JSON object")
+  }
+}
+
+///|
+test "registry public errors budgets and JSON bridge fail without partial data" {
+  match @moonpathspec.compile(["valid", ":(attr:a=值)x"]) {
+    Ok(_) => abort("expected invalid attribute")
+    Err(error) => {
+      assert_eq(error.code, "invalid_attribute")
+      assert_eq(error.pattern_index, Some(1))
+      assert_eq(error.offset, Some(9))
+    }
+  }
+  let limited = @moonpathspec.compile(["*"], limits={
+    ..@moonpathspec.default_limits(),
+    max_match_steps: 1,
+  }).unwrap()
+  match @moonpathspec.select(limited, ["long-path"]) {
+    Ok(_) => abort("expected budget error")
+    Err(error) => {
+      assert_eq(error.code, "match_budget_exceeded")
+      assert_eq(error.path_index, Some(0))
+    }
+  }
+  let response = @moonpathspec.dispatch(
+    "{\"patterns\":[\"src\",\":!src/tmp\"],\"paths\":[\"src/a\",\"src/tmp/b\",\"root\"]}",
+  )
+  let json = @json.parse(response[:])
+  assert_eq(registry_field(json, "schema_version"), Json(1))
+  assert_eq(registry_field(json, "exit_code"), Json(0))
+  assert_eq(registry_field(json, "selected"), Json(["src/a"]))
+  let failure = @moonpathspec.dispatch(
+    "{\"patterns\":[\"*\"],\"paths\":[\"a\"],\"limits\":{\"max_match_steps\":1}}",
+  )
+  let json = @json.parse(failure[:])
+  assert_eq(registry_field(json, "exit_code"), Json(2))
+  assert_eq(registry_field(json, "selected"), Json::array([]))
+  assert_eq(
+    registry_field(registry_field(json, "error"), "code"),
+    Json("match_budget_exceeded"),
+  )
+}
