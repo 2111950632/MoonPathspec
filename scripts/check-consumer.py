@@ -1,6 +1,8 @@
 """Extract the real moon package and consume only its public API."""
 import argparse
+import json
 import os
+import re
 from pathlib import Path
 import subprocess
 import tempfile
@@ -12,7 +14,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--moon', default=os.environ.get('MOONPATHSPEC_MOON', 'moon'))
     args = parser.parse_args()
-    archive_path = ROOT / '_build/publish/2111950632-moonpathspec-0.1.0.zip'
+    version = json.loads((ROOT / 'package.json').read_text(encoding='utf8'))['version']
+    if not re.fullmatch(r'\d+\.\d+\.\d+', version):
+        raise RuntimeError('Invalid release version')
+    archive_path = ROOT / ('_build/publish/2111950632-moonpathspec-' + version + '.zip')
     if not archive_path.is_file():
         raise RuntimeError('Run moon package first')
     parent = ROOT / '_build/consumer-check'
@@ -29,10 +34,13 @@ def main():
     if len(manifests) != 1:
         raise RuntimeError('Expected exactly one packaged module')
     module = manifests[0].parent
+    manifest = manifests[0].read_text(encoding='utf8')
+    if not re.search(r'^name\s*=\s*"2111950632/moonpathspec"\s*$', manifest, re.M) or not re.search(r'^version\s*=\s*"' + re.escape(version) + r'"\s*$', manifest, re.M):
+        raise RuntimeError('Extracted package name/version differs from the current release')
     consumer = folder / 'consumer'
     consumer.mkdir()
     (folder / 'moon.work').write_text('members = ["' + module.relative_to(folder).as_posix() + '", "consumer"]\n', encoding='utf8')
-    (consumer / 'moon.mod').write_text('name = "moonpathspec-validation/consumer"\nversion = "0.1.0"\nimport { "2111950632/moonpathspec@0.1.0" }\n', encoding='utf8')
+    (consumer / 'moon.mod').write_text('name = "moonpathspec-validation/consumer"\nversion = "0.1.0"\nimport { "2111950632/moonpathspec@' + version + '" }\n', encoding='utf8')
     (consumer / 'moon.pkg').write_text('import { "2111950632/moonpathspec" } for "test"\n', encoding='utf8')
     (consumer / 'consumer_test.mbt').write_text('''test "public selection and explanation" {
   let plan = @moonpathspec.compile([":(glob)**/*.mbt", ":(exclude)vendor"]).unwrap()

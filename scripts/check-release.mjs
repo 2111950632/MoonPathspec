@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+const root=fileURLToPath(new URL('../',import.meta.url));
+const metadata=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8'));
+const module=readFileSync(new URL('../moon.mod',import.meta.url),'utf8');
+const declared=module.match(/^version\s*=\s*"([^"]+)"/m)?.[1];
+assert.match(metadata.version,/^\d+\.\d+\.\d+$/);
+assert.equal(declared,metadata.version,'MoonBit and CLI package versions differ');
+const cli=spawnSync(process.execPath,['cli.mjs','--version'],{cwd:root,encoding:'utf8',timeout:15000});
+assert.equal(cli.status,0,cli.stderr);
+assert.equal(cli.stdout,metadata.version+'\n','CLI reports a stale version');
+console.log('Release metadata and CLI agree on '+metadata.version+'.');
