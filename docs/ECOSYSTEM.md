@@ -20,7 +20,7 @@ MoonPathspec 面向已经拥有文件清单的构建、打包和 CI 工具：调
 
 例如打包工具可将已有文件清单和发布标记交给 `:(attr:publish -generated)src/**`：现有 [属性案例](../examples/attributes.json) 只选择 `src/hand.mbt`，排除已生成文件及未满足发布条件的文件。仓库根目录运行 `node cli.mjs explain --input examples/attributes.json` 可查看逐文件原因。普通模式与 `glob`、prefix 与 literal 的最小案例分别见 [README](../README.md) 和 [literal 输入](../examples/literal.json)。这些案例展示已实现的选择核心，不宣称已接入某个外部构建系统。
 
-范围保持明确：输入为 UTF-8 仓库相对路径，`icase` 采用 ASCII 行为；候选发现、Git index、完整文件系统行为和属性文件解析不在核心内。非 literal 主体的反斜线明确拒绝，不承诺完整 Git 兼容或对其他包的性能优势。详细规则见 [GPP-1](COMPATIBILITY.md)，现有发布与独立下载消费证据见 [0.1.0 发布验证](../evidence/mooncakes-validation-0.1.0.json)。
+范围保持明确：输入为 UTF-8 仓库相对路径，`icase` 采用 ASCII 行为；候选发现、Git index、完整文件系统行为和属性文件解析不在核心内。非 literal 主体的反斜线明确拒绝，不承诺完整 Git 兼容或对其他包的性能优势。详细规则见 [GPP-1](COMPATIBILITY.md)，现有发布与独立下载消费证据见 [0.1.1 发布验证](../evidence/mooncakes-validation-0.1.1.json)。
 
 ## Frozen source baseline: bit
 

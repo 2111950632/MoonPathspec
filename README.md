@@ -118,7 +118,7 @@ Git 对照脚本创建临时仓库，逐次调用 `git ls-files --full-name -z`�
 
 `scripts/check-consumer.py` 从真实发布 ZIP 提取源码并建立单独消费项目；这是打包使用验证，不能冒充 Mooncakes 网络下载验证。`node scripts/count-source.mjs` 将生产 MoonBit、测试分开统计，结果不是组委会认证的有效代码行。
 
-注册表消费复验可在仓库外建立独立目录，使用 [发布验证记录](evidence/mooncakes-validation-0.1.0.json) 中的模块及包清单，将 [消费用例](tests/registry_consumer.mbt.fixture) 保存为 `registry_consumer_test.mbt`，然后运行记录中的两种后端测试命令。不要加入本地路径覆盖或 workspace 替代依赖。
+注册表消费复验可在仓库外建立独立目录，使用 [发布验证记录](evidence/mooncakes-validation-0.1.1.json) 中的模块及包清单，将 [消费用例](tests/registry_consumer.mbt.fixture) 保存为 `registry_consumer_test.mbt`，然后运行记录中的两种后端测试命令。不要加入本地路径覆盖或 workspace 替代依赖。
 
 ## 结构与开源
 
