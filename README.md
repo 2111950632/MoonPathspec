@@ -1,8 +1,8 @@
 # MoonPathspec
 
-MoonBit 原生 Git Pathspec 文件集合选择引擎。为构建工具、打包工具、变更影响分析和 CI 提供可嵌入的规则编译、路径选择及原因解释。维护者：石子硕（GitHub：2111950632）。当前开发版本：0.1.0。
+MoonBit 原生 Git Pathspec 文件集合选择引擎。为构建工具、打包工具、变更影响分析和 CI 提供可嵌入的规则编译、路径选择及原因解释。维护者：石子硕（GitHub：2111950632）。当前版本：0.1.0。
 
-0.1.0 已公开上传 GitHub，并通过 [Linux 与 Windows 线上完整验证](https://github.com/2111950632/MoonPathspec/actions/runs/45119787573)：构建、两种后端测试、Git 对照、真实打包消费及独立分发运行均成功。[本地验证记录](evidence/validation-0.1.0.json)与[线上核验记录](evidence/github-validation-0.1.0.json)分别保留。Mooncakes 尚未发布，安装命令待注册表发布后可用。
+0.1.0 已公开上传 GitHub，并通过 [Linux 与 Windows 线上完整验证](https://github.com/2111950632/MoonPathspec/actions/runs/45119787573)：构建、两种后端测试、Git 对照、真实打包消费及独立分发运行均成功。[本地验证记录](evidence/validation-0.1.0.json)与[线上核验记录](evidence/github-validation-0.1.0.json)分别保留。Mooncakes 模块名为 `2111950632/moonpathspec`；版本与文档见 [注册表入口](https://mooncakes.io/docs/2111950632/moonpathspec)。
 
 核心由 MoonBit 实现，调用者提供仓库相对文件路径和属性查询函数。Node.js 只负责命令行、文件输入输出和运行编译产物。运行时不调用 Git，不读取 Git index，不遍历仓库，不自行解析 `.gitattributes`。Git 只作为独立测试参考。
 
@@ -45,7 +45,7 @@ PowerShell/macOS/Linux 都应给含特殊字符的规则加引号。`--` 之后�
 
 ## MoonBit API
 
-从 Mooncakes 安装本模块的命令为 `moon add 2111950632/moonpathspec`，发布状态须以注册表实际结果为准；本地源码构建不等于已发布。
+从 Mooncakes 安装：`moon add 2111950632/moonpathspec`。在消费项目的 `moon.pkg` 中导入 `"2111950632/moonpathspec"`，即可通过 `@moonpathspec` 调用下述公开 API。
 
 ```moonbit
 let plan = @moonpathspec.compile([
