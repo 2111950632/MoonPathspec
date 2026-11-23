@@ -1,0 +1,4 @@
+{
+  "patterns": [":(top,glob)**/*.mbt", ":(top,exclude,glob)vendor/**"],
+  "paths": ["main.mbt", "src/parser.mbt", "vendor/code.mbt", "README.md"]
+}

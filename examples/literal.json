@@ -1,0 +1,5 @@
+{
+  "patterns": [":(literal)a[1].mbt"],
+  "prefix": "src",
+  "paths": ["src/a[1].mbt", "src/a1.mbt", "other/a[1].mbt"]
+}

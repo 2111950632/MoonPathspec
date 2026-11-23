@@ -1,0 +1,15 @@
+{
+  "name": "moonpathspec-cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {"node": ">=20"},
+  "scripts": {
+    "build": "moon build --target js --release --deny-warn",
+    "test": "node --test tests/integration.mjs",
+    "verify": "node scripts/verify.mjs",
+    "demo": "node cli.mjs explain --input examples/files.json",
+    "package": "node scripts/package.mjs"
+  }
+}

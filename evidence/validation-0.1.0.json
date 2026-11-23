@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "version": "0.1.0",
+  "client_date": "2026-11-23",
+  "kind": "local-validation-snapshot",
+  "platform": "Windows x86_64",
+  "moonc": "v0.10.22+124d61d05",
+  "moon": "0.1.20261119 (738607b)",
+  "node": "v24.22.3",
+  "git": "git version 2.56.0.windows.4",
+  "all_verification_steps_passed": true,
+  "steps": [
+    {
+      "command": "check --target all --deny-warn",
+      "exit_code": 0
+    },
+    {
+      "command": "test --target js --deny-warn",
+      "exit_code": 0
+    },
+    {
+      "command": "test --target wasm-gc --deny-warn",
+      "exit_code": 0
+    },
+    {
+      "command": "fmt --check",
+      "exit_code": 0
+    },
+    {
+      "command": "info",
+      "exit_code": 0
+    },
+    {
+      "command": "build --target js --release --deny-warn",
+      "exit_code": 0
+    },
+    {
+      "command": "--test tests/integration.mjs",
+      "exit_code": 0
+    },
+    {
+      "command": "tests/git_oracle.py",
+      "exit_code": 0
+    },
+    {
+      "command": "package",
+      "exit_code": 0
+    },
+    {
+      "command": "scripts/check-consumer.py",
+      "exit_code": 0
+    },
+    {
+      "command": "scripts/package.mjs",
+      "exit_code": 0
+    },
+    {
+      "command": "scripts/check-dist.mjs",
+      "exit_code": 0
+    }
+  ],
+  "tests": {
+    "moonbit_js": {
+      "passed": 62,
+      "failed": 0
+    },
+    "moonbit_wasm_gc": {
+      "passed": 62,
+      "failed": 0
+    },
+    "node_cli": {
+      "passed": 19,
+      "failed": 0
+    },
+    "git_differential": {
+      "passed": 404,
+      "total": 404
+    },
+    "explicit_profile_rejections": {
+      "passed": 20,
+      "total": 20
+    },
+    "packaged_public_api_consumer": {
+      "own_tests_per_target": 4,
+      "targets": [
+        "js",
+        "wasm-gc"
+      ],
+      "passed": true
+    },
+    "standalone_node_distribution": {
+      "passed": true,
+      "outside_source_tree": true
+    }
+  },
+  "oracle_inputs": {
+    "seed": 20261123,
+    "fixed_cases": 164,
+    "generated_cases": 260,
+    "candidate_paths": 58,
+    "attribute_pairs": 290,
+    "fixture_sha256": "1ab361ac97003e6abebea2bd4f7f48a548d1d77849398de682ac2387bacd77ad",
+    "generated_cases_sha256": "ed5be16e4b16041d8d79e88df20ba52e35a012374153f19a0841cc278dff86a2",
+    "oracle_results_sha256": "8687d78402818c2d36632b8008d9f2626a3f3e593005dc754603ac07d0077e8c"
+  },
+  "source_sha256": {
+    ".github/workflows/ci.yml": "c2867ae9889b7d46ef641845d712dd03cf67e2dd3688f8af33f82b1239e36382",
+    "cli.mjs": "fdb5df9d1d0cf1bf5909bbe2251dcf4e69cb8f24f370d15a5312e99bc0e2663a",
+    "cmd/bridge/main.mbt": "805f59778d31867160d31294f09ba94ac8943bd9ad2b0713c298914d45950a45",
+    "cmd/bridge/moon.pkg": "d8f7e78e880622905ba4ced43ae7b7ddcbff576c6390d39c4301ac5676cefd0c",
+    "glob.mbt": "c1e314ec5d453a3bf80df8325aec98fe53acd950d80a7230dd242cd46bf2cc6e",
+    "glob_wbtest.mbt": "e11e33c35667f4141a91c12fc68b88db577263b69cd064937eaaaab026ea926b",
+    "host.mjs": "967be11516fe4db9f0b1d530857a589d689404c964cef268192d6c69bb2bda38",
+    "model.mbt": "eeecbcc69cbe2952930e581c9324e2ddb1ee36811d3ce66623c9030d27165f54",
+    "moon.mod": "94086086333fcb212f6e1cdcdb0d2f292dfdffcec1ba3f1e30a49cd15b7289ea",
+    "moon.pkg": "37d23ac502480bbe3be72ebe979f5cb733b9fcff24efd741ebb44e24256b6464",
+    "package.json": "627b4963c2db9820cc78cf26d1618990c5bb44c1172ea58cc216b2dfb2e8e54f",
+    "parser.mbt": "3cb8374009ecb4095ac51139996c03670f5dfa4f5b4cafd4227ed8e3a4d21054",
+    "parser_wbtest.mbt": "42a457efb563dad66a590fefef5a907cf26bcee8b85c5923b0eabe76bcdd3f85",
+    "pkg.generated.mbti": "26ea31f44088fae5a78bd3fef41fd98b45bfd848ceb7f7831912bbd07d287c0d",
+    "protocol.mbt": "4c8a39e29d22db7a346769ea819cd0ef41a1637f37ea98978e6b1f3ead061729",
+    "protocol_wbtest.mbt": "0d1e11509ed120887d6f6f7844ee041753d5c0bbc80e62a56e77baacc8542c86",
+    "public_methods.mbt": "a5e9130470f57e04cd815bb4d2ef07af6b32b0d3e21e1eb1b8d0c50118a77218",
+    "scripts/check-consumer.py": "0c5b18d7e7ce6df79bbb033f712979792ea939906c314fbe3d377c143b2a02a4",
+    "scripts/check-dist.mjs": "7e0a4778e2bacf502c0789bfc75519261e8cc6ebc57e30aa28a7232459d03346",
+    "scripts/count-source.mjs": "5c2f5a0d1afd12a318ec800379865d4cff08feb35bc91521a2a04a4baa26ca35",
+    "scripts/package.mjs": "c4b2ab8960512f96836977f31910f83ade080ccc9bf2dba5fc60a7b7f08cbafb",
+    "scripts/request.mjs": "e38fa81108c4c125d66ed9127ffe9fd1a0f1bbde56a1726662e4dbbae3525dfb",
+    "scripts/verify.mjs": "50d4aca9925c4a363fcad93e362060a388c7a7f81af830ccfd98d4be80f89b81",
+    "selector.mbt": "9b021f42fc737858cbbe294d75707f6f15ba15f49ec92f7ddb01f539b5665323",
+    "selector_wbtest.mbt": "52f592520edc26f7b517409387d5cc09c66983541618ec360c64c7d52a81ab2e",
+    "tests/git_oracle.py": "d90aad780e62ac9bfa02691943f12e3bb5e4824aa9811f58d9ab810170dbd7ae",
+    "tests/integration.mjs": "9fbc27482e8d4b85d4e13a4230b9bf1217fc2d4357c0199cd10948245153540d",
+    "tests/oracle_cases.json": "1ab361ac97003e6abebea2bd4f7f48a548d1d77849398de682ac2387bacd77ad"
+  },
+  "unverified_external_steps": [
+    "public GitHub repository/upload",
+    "online Linux and Windows CI",
+    "Mooncakes publication and registry download",
+    "organizer approval"
+  ],
+  "notes": [
+    "Local package extraction is not registry-download validation.",
+    "404 differential cases and 20 explicit profile rejections are different assertions.",
+    "This is a dated source snapshot, not organizer certification or a promise of compatibility with all Git versions."
+  ]
+}

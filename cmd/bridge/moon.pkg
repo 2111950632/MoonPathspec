@@ -1,0 +1,7 @@
+import {
+  "2111950632/moonpathspec",
+}
+
+pkgtype(kind: "executable")
+
+supported_targets = "js"

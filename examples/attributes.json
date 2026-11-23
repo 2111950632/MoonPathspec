@@ -1,0 +1,8 @@
+{
+  "patterns": [":(attr:publish -generated)src/**"],
+  "paths": ["src/hand.mbt", "src/generated.mbt", "src/other.mbt"],
+  "attributes": {
+    "src/hand.mbt": {"publish": true, "generated": false},
+    "src/generated.mbt": {"publish": true, "generated": true}
+  }
+}

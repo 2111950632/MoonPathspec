@@ -1,0 +1,9 @@
+MoonPathspec
+Copyright 2026 石子硕 / 2111950632
+
+The compiled JavaScript distribution includes portions of the MoonBit standard
+library, copyright International Digital Economy Academy, under Apache-2.0.
+The accompanying LICENSE contains the Apache-2.0 terms.
+
+Git is an independent verification tool and is not part of this distribution.
+No Git, bit, or other matcher implementation is copied into the production code.

@@ -1,0 +1,49 @@
+name: Check MoonPathspec
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - name: Install MoonBit on Linux
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          curl --fail --show-error --location https://cli.moonbitlang.com/install/unix.sh -o /tmp/install-moon.sh
+          bash /tmp/install-moon.sh
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Install MoonBit on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $script = Join-Path $env:RUNNER_TEMP 'install-moon.ps1'
+          Invoke-WebRequest https://cli.moonbitlang.com/install/powershell.ps1 -OutFile $script
+          & $script
+          Join-Path $env:USERPROFILE '.moon/bin' | Out-File -FilePath $env:GITHUB_PATH -Append
+      - name: Check, build, test, compare with Git and consume real package
+        run: node scripts/verify.mjs
+      - name: Record source counts
+        run: node scripts/count-source.mjs > source-count.json
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        if: always()
+        with:
+          name: moonpathspec-${{ matrix.os }}
+          path: |
+            evidence/local/
+            source-count.json
+            pkg.generated.mbti
+            _build/publish/*.zip
+            dist/
+          if-no-files-found: warn

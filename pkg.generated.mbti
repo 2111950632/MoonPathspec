@@ -1,0 +1,141 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "2111950632/moonpathspec"
+
+import {
+  "moonbitlang/core/debug",
+  "moonbitlang/core/json",
+}
+
+// Values
+pub fn compile(Array[String], prefix? : String, limits? : Limits) -> Result[Plan, SelectionError]
+
+pub fn decision_json(Decision) -> @json.Json
+
+pub fn default_limits() -> Limits
+
+pub fn dispatch(String) -> String
+
+pub fn explain(Plan, String, attribute? : (String, String) -> AttributeValue) -> Result[Decision, SelectionError]
+
+pub fn parse_pattern(String) -> Result[ParsedPattern, ParseError]
+
+pub fn select(Plan, Array[String], attribute? : (String, String) -> AttributeValue) -> Result[Selection, SelectionError]
+
+pub fn selection_json(Selection) -> @json.Json
+
+// Errors
+
+// Types and methods
+#derive(Eq, @debug.Debug)
+pub(all) enum AttributeCondition {
+  IsSet(String)
+  IsUnset(String)
+  IsUnspecified(String)
+  Equals(String, String)
+}
+pub fn AttributeCondition::equal(Self, Self) -> Bool
+pub fn AttributeCondition::not_equal(Self, Self) -> Bool
+pub fn AttributeCondition::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) enum AttributeValue {
+  Set
+  Unset
+  Unspecified
+  Value(String)
+}
+pub fn AttributeValue::equal(Self, Self) -> Bool
+pub fn AttributeValue::not_equal(Self, Self) -> Bool
+pub fn AttributeValue::to_repr(Self) -> @debug.Repr
+
+type CompiledClause
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Decision {
+  path : String
+  selected : Bool
+  included_by : Array[Int32]
+  excluded_by : Array[Int32]
+  reason : String
+  steps : Int32
+}
+pub fn Decision::equal(Self, Self) -> Bool
+pub fn Decision::not_equal(Self, Self) -> Bool
+pub fn Decision::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Limits {
+  max_patterns : Int32
+  max_pattern_bytes : Int32
+  max_path_bytes : Int32
+  max_paths : Int32
+  max_match_steps : Int32
+  max_total_steps : Int32
+}
+pub fn Limits::equal(Self, Self) -> Bool
+pub fn Limits::not_equal(Self, Self) -> Bool
+pub fn Limits::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct MagicFlags {
+  top : Bool
+  literal : Bool
+  glob : Bool
+  icase : Bool
+  exclude : Bool
+  attributes : Array[AttributeCondition]
+}
+pub fn MagicFlags::equal(Self, Self) -> Bool
+pub fn MagicFlags::not_equal(Self, Self) -> Bool
+pub fn MagicFlags::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct ParseError {
+  code : String
+  offset : Int32
+  message : String
+}
+pub fn ParseError::equal(Self, Self) -> Bool
+pub fn ParseError::not_equal(Self, Self) -> Bool
+pub fn ParseError::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct ParsedPattern {
+  original : String
+  pattern : String
+  magic : MagicFlags
+  no_pathspec : Bool
+}
+pub fn ParsedPattern::equal(Self, Self) -> Bool
+pub fn ParsedPattern::not_equal(Self, Self) -> Bool
+pub fn ParsedPattern::to_repr(Self) -> @debug.Repr
+
+pub struct Plan {
+  // private fields
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Selection {
+  selected : Array[String]
+  decisions : Array[Decision]
+  steps : Int32
+}
+pub fn Selection::equal(Self, Self) -> Bool
+pub fn Selection::not_equal(Self, Self) -> Bool
+pub fn Selection::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct SelectionError {
+  code : String
+  pattern_index : Int32?
+  path_index : Int32?
+  offset : Int32?
+  message : String
+}
+pub fn SelectionError::equal(Self, Self) -> Bool
+pub fn SelectionError::not_equal(Self, Self) -> Bool
+pub fn SelectionError::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits

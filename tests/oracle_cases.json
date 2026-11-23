@@ -1,0 +1,1401 @@
+{
+  "schema_version": 1,
+  "profile": {
+    "name": "GPP-1 UTF-8 Git pathspec selection profile",
+    "oracle": "git ls-files --full-name -z -- <patterns>; staged UTF-8 paths; no commits",
+    "cwd": "prefix names an existing repository directory",
+    "order": "Expected Git set is restored to caller candidate order",
+    "attributes": "Working-tree .gitattributes, read with git check-attr -z for every candidate/name pair; all four states retained",
+    "exclusions": "Not a full Git command compatibility claim. No arbitrary non-UTF-8 names, environment pathspec flags, filesystem traversal, tree-ish attributes, platform-specific case folding, symlinks, submodules or sparse index.",
+    "explicit_rejections": {
+      "unsupported_backslash": "Nonliteral pattern bodies containing a backslash are explicitly rejected. Git results are retained as research observations; these checks are counted separately from differential equivalence. Use literal magic for literal metacharacters."
+    }
+  },
+  "attribute_names": [
+    "flag",
+    "review",
+    "kind",
+    "tag",
+    "missing"
+  ],
+  "gitattributes": "*.txt flag -review kind=text\ndocs/** review kind=doc\nsrc/** kind=source tag=stable\nsrc/lib/util.mbt -flag review kind=library\nassets/** -flag -review\nvendor/** !flag !review !kind !tag\nunicode/** -review tag=utf8\n\"space dir/a file.txt\" flag review tag=space\n",
+  "paths": [
+    "README.md",
+    "root.txt",
+    ".hidden",
+    "foo",
+    "x",
+    "src/main.mbt",
+    "src/App.MBT",
+    "src/lib/util.mbt",
+    "src/lib/helper.txt",
+    "src/lib/deep/code.mbt",
+    "src/foo",
+    "docs/guide.md",
+    "docs/a.txt",
+    "docs/ab.txt",
+    "docs/[draft].txt",
+    "docs/nested/page.md",
+    "docs/nested/foo",
+    "docs/UPPER.TXT",
+    "assets/image.png",
+    "assets/icons/tiny.svg",
+    "vendor/keep.txt",
+    "vendor/lib/code.mbt",
+    "space dir/a file.txt",
+    "space dir/nested/file.md",
+    "unicode/猫.txt",
+    "unicode/😀.txt",
+    "unicode/é.txt",
+    "unicode/é.txt",
+    "unicode/x.txt",
+    "unicode/λ.mbt",
+    "a/x",
+    "a/b",
+    "a/xb",
+    "a/z/xb",
+    "a/z/b",
+    "a/z/deep/b",
+    "a/aab",
+    "a/aabz",
+    "a/aa/b",
+    "a/ab",
+    "a/zz/x",
+    "z/x",
+    "z/foo",
+    "case/A",
+    "case/b",
+    "case/z",
+    "case/_",
+    "case/^",
+    "case/`",
+    "case/é",
+    "case/A.txt",
+    "case/b.txt",
+    "case/z.txt",
+    "hidden/.file",
+    "hidden/deep/.file",
+    "dash-name.txt",
+    "case/lower/a",
+    "case/lower-a"
+  ],
+  "cases": [
+    {
+      "id": "no-patterns",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": []
+    },
+    {
+      "id": "colon-only",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":"
+      ]
+    },
+    {
+      "id": "dot",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        "."
+      ]
+    },
+    {
+      "id": "empty-top",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(top)"
+      ]
+    },
+    {
+      "id": "short-top-empty",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":/"
+      ]
+    },
+    {
+      "id": "star",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        "*"
+      ]
+    },
+    {
+      "id": "default-extension",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        "*.txt"
+      ]
+    },
+    {
+      "id": "default-dir-star",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        "docs/*"
+      ]
+    },
+    {
+      "id": "glob-dir-star",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(glob)docs/*"
+      ]
+    },
+    {
+      "id": "literal-directory",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(literal)docs"
+      ]
+    },
+    {
+      "id": "glob-directory",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(glob)docs"
+      ]
+    },
+    {
+      "id": "directory-slash",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        "docs/"
+      ]
+    },
+    {
+      "id": "glob-directory-slash",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(glob)docs/"
+      ]
+    },
+    {
+      "id": "literal-file",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(literal)docs/[draft].txt"
+      ]
+    },
+    {
+      "id": "literal-star",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(literal)*.txt"
+      ]
+    },
+    {
+      "id": "escaped-brackets",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        "docs/\\[draft\\].txt"
+      ],
+      "expected_profile_rejection": "unsupported_backslash"
+    },
+    {
+      "id": "bracket-range",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(glob)docs/[a-z]*.txt"
+      ]
+    },
+    {
+      "id": "bracket-negation",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(glob)docs/[!a]*.txt"
+      ]
+    },
+    {
+      "id": "bracket-caret",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(glob)docs/[^a]*.txt"
+      ]
+    },
+    {
+      "id": "question-ascii",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(glob)docs/?.txt"
+      ]
+    },
+    {
+      "id": "glob-leading-recursion",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(glob)**/foo"
+      ]
+    },
+    {
+      "id": "default-leading-stars",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        "**/foo"
+      ]
+    },
+    {
+      "id": "glob-internal-recursion",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(glob)a/**/b"
+      ]
+    },
+    {
+      "id": "default-internal-stars",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        "a/**/b"
+      ]
+    },
+    {
+      "id": "glob-triple-recursion",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(glob)a/***/b"
+      ]
+    },
+    {
+      "id": "default-triple-stars",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        "a/***/b"
+      ]
+    },
+    {
+      "id": "glob-triple-leading",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(glob)***/x"
+      ]
+    },
+    {
+      "id": "default-triple-leading",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        "***/x"
+      ]
+    },
+    {
+      "id": "glob-embedded-double",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(glob)a/**b"
+      ]
+    },
+    {
+      "id": "default-embedded-double",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        "a/**b"
+      ]
+    },
+    {
+      "id": "glob-embedded-triple",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(glob)a***b"
+      ]
+    },
+    {
+      "id": "default-embedded-triple",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        "a***b"
+      ]
+    },
+    {
+      "id": "glob-trailing-double",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(glob)a/**"
+      ]
+    },
+    {
+      "id": "glob-trailing-triple",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(glob)a/***"
+      ]
+    },
+    {
+      "id": "default-trailing-double",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        "a/**"
+      ]
+    },
+    {
+      "id": "icase-default",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(icase)SRC/*.MBT"
+      ]
+    },
+    {
+      "id": "icase-glob",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(glob,icase)SRC/**/*.MBT"
+      ]
+    },
+    {
+      "id": "case-sensitive",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        "SRC/*.MBT"
+      ]
+    },
+    {
+      "id": "icase-literal",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(literal,icase)readme.MD"
+      ]
+    },
+    {
+      "id": "exclude-only",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(exclude)docs"
+      ]
+    },
+    {
+      "id": "short-exclude",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":!docs"
+      ]
+    },
+    {
+      "id": "short-caret-exclude",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":^docs"
+      ]
+    },
+    {
+      "id": "exclude-after-include",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        "*",
+        ":(exclude)docs"
+      ]
+    },
+    {
+      "id": "exclude-before-include",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(exclude)docs",
+        "*"
+      ]
+    },
+    {
+      "id": "exclude-multiple",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        "*",
+        ":(exclude)docs",
+        ":(exclude)vendor"
+      ]
+    },
+    {
+      "id": "include-union",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        "src/*.mbt",
+        "docs/*.md"
+      ]
+    },
+    {
+      "id": "exclude-reinclude-is-still-excluded",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        "docs",
+        ":(exclude)docs/a.txt",
+        "docs/a.txt"
+      ]
+    },
+    {
+      "id": "empty-exclude",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(exclude)"
+      ]
+    },
+    {
+      "id": "short-empty-exclude",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":!"
+      ]
+    },
+    {
+      "id": "mixed-colon",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":",
+        "root.txt"
+      ]
+    },
+    {
+      "id": "mixed-colon-star",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":",
+        "*.txt"
+      ]
+    },
+    {
+      "id": "colon-and-exclude",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":",
+        ":(exclude)docs"
+      ]
+    },
+    {
+      "id": "two-colons",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":",
+        ":"
+      ]
+    },
+    {
+      "id": "not-found",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        "not-present"
+      ]
+    },
+    {
+      "id": "empty-pattern",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ""
+      ]
+    },
+    {
+      "id": "invalid-magic",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(unknown)src"
+      ]
+    },
+    {
+      "id": "unterminated-magic",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(globsrc"
+      ]
+    },
+    {
+      "id": "incompatible-magic",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(glob,literal)src"
+      ]
+    },
+    {
+      "id": "empty-attr",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(attr:)src"
+      ]
+    },
+    {
+      "id": "invalid-attr-value",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        ":(attr:kind=a=b)src"
+      ]
+    },
+    {
+      "id": "outside-root",
+      "category": "fixed",
+      "prefix": "",
+      "patterns": [
+        "../root.txt"
+      ]
+    },
+    {
+      "id": "prefix-src-none",
+      "category": "prefix",
+      "prefix": "src",
+      "patterns": []
+    },
+    {
+      "id": "prefix-src-colon",
+      "category": "prefix",
+      "prefix": "src",
+      "patterns": [
+        ":"
+      ]
+    },
+    {
+      "id": "prefix-src-dot",
+      "category": "prefix",
+      "prefix": "src",
+      "patterns": [
+        "."
+      ]
+    },
+    {
+      "id": "prefix-src-star",
+      "category": "prefix",
+      "prefix": "src",
+      "patterns": [
+        "*"
+      ]
+    },
+    {
+      "id": "prefix-src-top",
+      "category": "prefix",
+      "prefix": "src",
+      "patterns": [
+        ":(top)*"
+      ]
+    },
+    {
+      "id": "prefix-src-exclude-only",
+      "category": "prefix",
+      "prefix": "src",
+      "patterns": [
+        ":(exclude)*.txt"
+      ]
+    },
+    {
+      "id": "prefix-src-lib-none",
+      "category": "prefix",
+      "prefix": "src/lib",
+      "patterns": []
+    },
+    {
+      "id": "prefix-src-lib-colon",
+      "category": "prefix",
+      "prefix": "src/lib",
+      "patterns": [
+        ":"
+      ]
+    },
+    {
+      "id": "prefix-src-lib-dot",
+      "category": "prefix",
+      "prefix": "src/lib",
+      "patterns": [
+        "."
+      ]
+    },
+    {
+      "id": "prefix-src-lib-star",
+      "category": "prefix",
+      "prefix": "src/lib",
+      "patterns": [
+        "*"
+      ]
+    },
+    {
+      "id": "prefix-src-lib-top",
+      "category": "prefix",
+      "prefix": "src/lib",
+      "patterns": [
+        ":(top)*"
+      ]
+    },
+    {
+      "id": "prefix-src-lib-exclude-only",
+      "category": "prefix",
+      "prefix": "src/lib",
+      "patterns": [
+        ":(exclude)*.txt"
+      ]
+    },
+    {
+      "id": "prefix-docs-none",
+      "category": "prefix",
+      "prefix": "docs",
+      "patterns": []
+    },
+    {
+      "id": "prefix-docs-colon",
+      "category": "prefix",
+      "prefix": "docs",
+      "patterns": [
+        ":"
+      ]
+    },
+    {
+      "id": "prefix-docs-dot",
+      "category": "prefix",
+      "prefix": "docs",
+      "patterns": [
+        "."
+      ]
+    },
+    {
+      "id": "prefix-docs-star",
+      "category": "prefix",
+      "prefix": "docs",
+      "patterns": [
+        "*"
+      ]
+    },
+    {
+      "id": "prefix-docs-top",
+      "category": "prefix",
+      "prefix": "docs",
+      "patterns": [
+        ":(top)*"
+      ]
+    },
+    {
+      "id": "prefix-docs-exclude-only",
+      "category": "prefix",
+      "prefix": "docs",
+      "patterns": [
+        ":(exclude)*.txt"
+      ]
+    },
+    {
+      "id": "prefix-unicode-none",
+      "category": "prefix",
+      "prefix": "unicode",
+      "patterns": []
+    },
+    {
+      "id": "prefix-unicode-colon",
+      "category": "prefix",
+      "prefix": "unicode",
+      "patterns": [
+        ":"
+      ]
+    },
+    {
+      "id": "prefix-unicode-dot",
+      "category": "prefix",
+      "prefix": "unicode",
+      "patterns": [
+        "."
+      ]
+    },
+    {
+      "id": "prefix-unicode-star",
+      "category": "prefix",
+      "prefix": "unicode",
+      "patterns": [
+        "*"
+      ]
+    },
+    {
+      "id": "prefix-unicode-top",
+      "category": "prefix",
+      "prefix": "unicode",
+      "patterns": [
+        ":(top)*"
+      ]
+    },
+    {
+      "id": "prefix-unicode-exclude-only",
+      "category": "prefix",
+      "prefix": "unicode",
+      "patterns": [
+        ":(exclude)*.txt"
+      ]
+    },
+    {
+      "id": "prefix-a-none",
+      "category": "prefix",
+      "prefix": "a",
+      "patterns": []
+    },
+    {
+      "id": "prefix-a-colon",
+      "category": "prefix",
+      "prefix": "a",
+      "patterns": [
+        ":"
+      ]
+    },
+    {
+      "id": "prefix-a-dot",
+      "category": "prefix",
+      "prefix": "a",
+      "patterns": [
+        "."
+      ]
+    },
+    {
+      "id": "prefix-a-star",
+      "category": "prefix",
+      "prefix": "a",
+      "patterns": [
+        "*"
+      ]
+    },
+    {
+      "id": "prefix-a-top",
+      "category": "prefix",
+      "prefix": "a",
+      "patterns": [
+        ":(top)*"
+      ]
+    },
+    {
+      "id": "prefix-a-exclude-only",
+      "category": "prefix",
+      "prefix": "a",
+      "patterns": [
+        ":(exclude)*.txt"
+      ]
+    },
+    {
+      "id": "prefix-parent",
+      "category": "prefix",
+      "prefix": "src",
+      "patterns": [
+        "../*.txt"
+      ]
+    },
+    {
+      "id": "prefix-parent-dir",
+      "category": "prefix",
+      "prefix": "src",
+      "patterns": [
+        "../docs/"
+      ]
+    },
+    {
+      "id": "prefix-two-parents",
+      "category": "prefix",
+      "prefix": "src/lib",
+      "patterns": [
+        "../../docs/*"
+      ]
+    },
+    {
+      "id": "prefix-dotdots",
+      "category": "prefix",
+      "prefix": "src",
+      "patterns": [
+        "./../docs/./a.txt"
+      ]
+    },
+    {
+      "id": "prefix-trailing-parent",
+      "category": "prefix",
+      "prefix": "src",
+      "patterns": [
+        "../src/../docs/a.txt"
+      ]
+    },
+    {
+      "id": "prefix-top",
+      "category": "prefix",
+      "prefix": "src/lib",
+      "patterns": [
+        ":(top)README.md"
+      ]
+    },
+    {
+      "id": "prefix-short-top",
+      "category": "prefix",
+      "prefix": "src/lib",
+      "patterns": [
+        ":/docs"
+      ]
+    },
+    {
+      "id": "prefix-icase-body",
+      "category": "prefix",
+      "prefix": "src",
+      "patterns": [
+        ":(icase)MAIN.MBT"
+      ]
+    },
+    {
+      "id": "prefix-icase-parent",
+      "category": "prefix",
+      "prefix": "src",
+      "patterns": [
+        ":(icase)../SRC/*.MBT"
+      ]
+    },
+    {
+      "id": "prefix-outside",
+      "category": "prefix",
+      "prefix": "src",
+      "patterns": [
+        "../../root.txt"
+      ]
+    },
+    {
+      "id": "prefix-colon-mix",
+      "category": "prefix",
+      "prefix": "src",
+      "patterns": [
+        ":",
+        "main.mbt"
+      ]
+    },
+    {
+      "id": "prefix-colon-exclude",
+      "category": "prefix",
+      "prefix": "src",
+      "patterns": [
+        ":",
+        ":(exclude)main.mbt"
+      ]
+    },
+    {
+      "id": "attr-flag",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:flag)"
+      ]
+    },
+    {
+      "id": "attr--flag",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:-flag)"
+      ]
+    },
+    {
+      "id": "attr-unspecified-flag",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:!flag)"
+      ]
+    },
+    {
+      "id": "attr-review",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:review)"
+      ]
+    },
+    {
+      "id": "attr--review",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:-review)"
+      ]
+    },
+    {
+      "id": "attr-unspecified-review",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:!review)"
+      ]
+    },
+    {
+      "id": "attr-kind-text",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:kind=text)"
+      ]
+    },
+    {
+      "id": "attr-kind-source",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:kind=source)"
+      ]
+    },
+    {
+      "id": "attr-kind-doc",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:kind=doc)"
+      ]
+    },
+    {
+      "id": "attr-kind-library",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:kind=library)"
+      ]
+    },
+    {
+      "id": "attr-tag-utf8",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:tag=utf8)"
+      ]
+    },
+    {
+      "id": "attr-tag-stable",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:tag=stable)"
+      ]
+    },
+    {
+      "id": "attr-unspecified-missing",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:!missing)"
+      ]
+    },
+    {
+      "id": "attr-missing",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:missing)"
+      ]
+    },
+    {
+      "id": "attr-kind-",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:kind=)"
+      ]
+    },
+    {
+      "id": "attr-flag_review",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:flag review)"
+      ]
+    },
+    {
+      "id": "attr-flag_-review",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:flag -review)"
+      ]
+    },
+    {
+      "id": "attr--flag_review",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:-flag review)"
+      ]
+    },
+    {
+      "id": "attr-unspecified-flag_unspecified-review",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:!flag !review)"
+      ]
+    },
+    {
+      "id": "attr-flag_-flag",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:flag -flag)"
+      ]
+    },
+    {
+      "id": "attr-glob",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(glob,attr:flag)**/*.txt"
+      ]
+    },
+    {
+      "id": "attr-icase",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(icase,attr:kind=source)SRC/*.MBT"
+      ]
+    },
+    {
+      "id": "attr-exclude",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        "*",
+        ":(exclude,attr:review)"
+      ]
+    },
+    {
+      "id": "attr-exclude-only",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(exclude,attr:flag)"
+      ]
+    },
+    {
+      "id": "attr-prefix",
+      "category": "attribute",
+      "prefix": "src",
+      "patterns": [
+        ":(attr:kind=source)*"
+      ]
+    },
+    {
+      "id": "attr-top-prefix",
+      "category": "attribute",
+      "prefix": "src/lib",
+      "patterns": [
+        ":(top,attr:kind=doc)docs"
+      ]
+    },
+    {
+      "id": "attr-unset-explicit",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:-flag)assets/**"
+      ]
+    },
+    {
+      "id": "attr-unspecified-reset",
+      "category": "attribute",
+      "prefix": "",
+      "patterns": [
+        ":(attr:!flag !kind)vendor/**"
+      ]
+    },
+    {
+      "id": "unicode-byte-question-1",
+      "category": "utf8-bytes",
+      "prefix": "",
+      "patterns": [
+        ":(glob)unicode/?.txt"
+      ]
+    },
+    {
+      "id": "unicode-byte-question-2",
+      "category": "utf8-bytes",
+      "prefix": "",
+      "patterns": [
+        ":(glob)unicode/??.txt"
+      ]
+    },
+    {
+      "id": "unicode-byte-question-3",
+      "category": "utf8-bytes",
+      "prefix": "",
+      "patterns": [
+        ":(glob)unicode/???.txt"
+      ]
+    },
+    {
+      "id": "unicode-byte-question-4",
+      "category": "utf8-bytes",
+      "prefix": "",
+      "patterns": [
+        ":(glob)unicode/????.txt"
+      ]
+    },
+    {
+      "id": "unicode-byte-question-5",
+      "category": "utf8-bytes",
+      "prefix": "",
+      "patterns": [
+        ":(glob)unicode/?????.txt"
+      ]
+    },
+    {
+      "id": "unicode-literal",
+      "category": "utf8-bytes",
+      "prefix": "",
+      "patterns": [
+        ":(literal)unicode/猫.txt"
+      ]
+    },
+    {
+      "id": "unicode-emoji-literal",
+      "category": "utf8-bytes",
+      "prefix": "",
+      "patterns": [
+        ":(literal)unicode/😀.txt"
+      ]
+    },
+    {
+      "id": "unicode-ascii-alpha",
+      "category": "utf8-bytes",
+      "prefix": "",
+      "patterns": [
+        ":(glob)unicode/[[:alpha:]]*"
+      ]
+    },
+    {
+      "id": "unicode-nonascii-icase",
+      "category": "utf8-bytes",
+      "prefix": "",
+      "patterns": [
+        ":(icase)unicode/É.txt"
+      ]
+    },
+    {
+      "id": "class-140",
+      "category": "bracket-icase",
+      "prefix": "",
+      "patterns": [
+        ":(glob,icase)case/[A]"
+      ]
+    },
+    {
+      "id": "class-141",
+      "category": "bracket-icase",
+      "prefix": "",
+      "patterns": [
+        ":(glob,icase)case/[a]"
+      ]
+    },
+    {
+      "id": "class-142",
+      "category": "bracket-icase",
+      "prefix": "",
+      "patterns": [
+        ":(glob,icase)case/[A-Z]"
+      ]
+    },
+    {
+      "id": "class-143",
+      "category": "bracket-icase",
+      "prefix": "",
+      "patterns": [
+        ":(glob,icase)case/[a-z]"
+      ]
+    },
+    {
+      "id": "class-144",
+      "category": "bracket-icase",
+      "prefix": "",
+      "patterns": [
+        ":(glob,icase)case/[Z-a]"
+      ]
+    },
+    {
+      "id": "class-145",
+      "category": "bracket-icase",
+      "prefix": "",
+      "patterns": [
+        ":(glob,icase)case/[[:lower:]]"
+      ]
+    },
+    {
+      "id": "class-146",
+      "category": "bracket-icase",
+      "prefix": "",
+      "patterns": [
+        ":(glob,icase)case/[[:upper:]]"
+      ]
+    },
+    {
+      "id": "class-147",
+      "category": "bracket-icase",
+      "prefix": "",
+      "patterns": [
+        ":(glob,icase)case/[[:alpha:]]"
+      ]
+    },
+    {
+      "id": "class-148",
+      "category": "bracket-icase",
+      "prefix": "",
+      "patterns": [
+        ":(glob,icase)case/[[:digit:]]"
+      ]
+    },
+    {
+      "id": "class-149",
+      "category": "bracket-icase",
+      "prefix": "",
+      "patterns": [
+        ":(glob,icase)case/[[:punct:]]"
+      ]
+    },
+    {
+      "id": "icase-escaped-upper",
+      "category": "bracket-icase",
+      "prefix": "",
+      "patterns": [
+        ":(glob,icase)case/*\\A"
+      ],
+      "expected_profile_rejection": "unsupported_backslash"
+    },
+    {
+      "id": "icase-escaped-lower",
+      "category": "bracket-icase",
+      "prefix": "",
+      "patterns": [
+        ":(glob,icase)case/*\\a"
+      ],
+      "expected_profile_rejection": "unsupported_backslash"
+    },
+    {
+      "id": "icase-ordinary-upper",
+      "category": "bracket-icase",
+      "prefix": "",
+      "patterns": [
+        ":(glob,icase)case/*A"
+      ]
+    },
+    {
+      "id": "icase-ordinary-lower",
+      "category": "bracket-icase",
+      "prefix": "",
+      "patterns": [
+        ":(glob,icase)case/*a"
+      ]
+    },
+    {
+      "id": "icase-upper-singleton-both-cases",
+      "category": "bracket-icase",
+      "prefix": "",
+      "patterns": [
+        ":(glob,icase)case/**/[A]"
+      ]
+    },
+    {
+      "id": "icase-lower-singleton-both-cases",
+      "category": "bracket-icase",
+      "prefix": "",
+      "patterns": [
+        ":(glob,icase)case/**/[a]"
+      ]
+    },
+    {
+      "id": "top-dot",
+      "category": "top-raw-path",
+      "prefix": "",
+      "patterns": [
+        ":(top)."
+      ]
+    },
+    {
+      "id": "top-dot-prefix",
+      "category": "top-raw-path",
+      "prefix": "src",
+      "patterns": [
+        ":(top)."
+      ]
+    },
+    {
+      "id": "short-top-dot",
+      "category": "top-raw-path",
+      "prefix": "",
+      "patterns": [
+        ":/."
+      ]
+    },
+    {
+      "id": "top-dot-component",
+      "category": "top-raw-path",
+      "prefix": "",
+      "patterns": [
+        ":(top)docs/./a.txt"
+      ]
+    },
+    {
+      "id": "top-parent-component",
+      "category": "top-raw-path",
+      "prefix": "",
+      "patterns": [
+        ":(top)docs/../root.txt"
+      ]
+    },
+    {
+      "id": "top-parent-outside-literal",
+      "category": "top-raw-path",
+      "prefix": "",
+      "patterns": [
+        ":(top)../root.txt"
+      ]
+    },
+    {
+      "id": "top-duplicate-slash",
+      "category": "top-raw-path",
+      "prefix": "",
+      "patterns": [
+        ":(top)docs//a.txt"
+      ]
+    },
+    {
+      "id": "top-exclude-dot-prefix",
+      "category": "top-raw-path",
+      "prefix": "src",
+      "patterns": [
+        ":(exclude,top)."
+      ]
+    }
+  ]
+}
