@@ -1396,6 +1396,185 @@
       "patterns": [
         ":(exclude,top)."
       ]
+    },
+    {
+      "id": "scope-local-top-union-with-root-exclusion",
+      "category": "combined-scope",
+      "prefix": "src/lib",
+      "patterns": [
+        "*.mbt",
+        ":(top,glob)docs/**/*.md",
+        ":(top,exclude,glob)docs/nested/**"
+      ]
+    },
+    {
+      "id": "scope-top-exclude-only-does-not-expand-prefix",
+      "category": "exclude-only-composition",
+      "prefix": "src/lib",
+      "patterns": [
+        ":(top,exclude,glob)src/lib/deep/**",
+        ":(exclude)*.txt"
+      ]
+    },
+    {
+      "id": "scope-parent-positive-root-recursive-exclusion",
+      "category": "combined-scope",
+      "prefix": "src",
+      "patterns": [
+        "../docs",
+        ":(top,exclude,glob)docs/**/page.md"
+      ]
+    },
+    {
+      "id": "scope-raw-top-dot-does-not-shadow-local-positive",
+      "category": "combined-scope",
+      "prefix": "docs",
+      "patterns": [
+        ":(top)docs/./a.txt",
+        "a.txt"
+      ]
+    },
+    {
+      "id": "modes-literal-bracket-positive-glob-bracket-exclusion",
+      "category": "mixed-mode-composition",
+      "prefix": "docs",
+      "patterns": [
+        ":(literal)[draft].txt",
+        "*.md",
+        ":(exclude,glob)[[]draft].txt"
+      ]
+    },
+    {
+      "id": "modes-literal-icase-prefix-preserves-metacharacters",
+      "category": "mixed-mode-composition",
+      "prefix": "docs",
+      "patterns": [
+        ":(literal,icase)[DRAFT].TXT",
+        ":(exclude,glob)[a-z]*.txt"
+      ]
+    },
+    {
+      "id": "modes-root-glob-with-literal-and-nested-exclusions",
+      "category": "mixed-mode-composition",
+      "prefix": "src",
+      "patterns": [
+        ":(top,glob)docs/**/*",
+        ":(top,exclude,literal)docs/[draft].txt",
+        ":(top,exclude,glob)docs/*/*.md"
+      ]
+    },
+    {
+      "id": "exclude-only-byte-length-and-literal-emoji",
+      "category": "exclude-only-composition",
+      "prefix": "unicode",
+      "patterns": [
+        ":(exclude,glob)??.txt",
+        ":(exclude,literal)😀.txt"
+      ]
+    },
+    {
+      "id": "exclude-only-shallow-extension-and-reviewed-subtree",
+      "category": "exclude-only-composition",
+      "prefix": "docs",
+      "patterns": [
+        ":(exclude,glob)*.txt",
+        ":(exclude,attr:review)nested"
+      ]
+    },
+    {
+      "id": "exclude-only-root-and-local-attribute-values",
+      "category": "exclude-only-composition",
+      "prefix": "src/lib",
+      "patterns": [
+        ":(top,exclude,attr:kind=source)src/**",
+        ":(exclude,attr:kind=library)*"
+      ]
+    },
+    {
+      "id": "attrs-set-unset-value-unspecified-in-one-glob",
+      "category": "attribute-state-composition",
+      "prefix": "",
+      "patterns": [
+        ":(glob,attr:flag -review kind=text !missing)unicode/*.txt"
+      ]
+    },
+    {
+      "id": "attrs-unset-set-specific-value-under-recursive-glob",
+      "category": "attribute-state-composition",
+      "prefix": "",
+      "patterns": [
+        ":(glob,attr:-flag review kind=library !missing)src/**/*.mbt"
+      ]
+    },
+    {
+      "id": "attrs-reset-all-declared-states-with-root-anchor",
+      "category": "attribute-state-composition",
+      "prefix": "src/lib",
+      "patterns": [
+        ":(top,attr:!flag !review !kind !tag)vendor/**"
+      ]
+    },
+    {
+      "id": "attrs-unicode-byte-glob-minus-decomposed-literal",
+      "category": "attribute-state-composition",
+      "prefix": "unicode",
+      "patterns": [
+        ":(glob,attr:tag=utf8)???.txt",
+        ":(exclude,literal)é.txt"
+      ]
+    },
+    {
+      "id": "attrs-valued-positive-unset-negative-in-prefix",
+      "category": "attribute-state-composition",
+      "prefix": "src/lib",
+      "patterns": [
+        ":(attr:kind=source)*",
+        ":(exclude,attr:-review)*.txt"
+      ]
+    },
+    {
+      "id": "attrs-value-does-not-satisfy-boolean-set-conjunction",
+      "category": "attribute-state-composition",
+      "prefix": "",
+      "patterns": [
+        ":(attr:kind kind=source)src/**"
+      ]
+    },
+    {
+      "id": "classes-negated-icase-range-minus-literal-punctuation",
+      "category": "unicode-class-composition",
+      "prefix": "case",
+      "patterns": [
+        ":(glob,icase)[!A-Z]",
+        ":(exclude,literal)`"
+      ]
+    },
+    {
+      "id": "classes-posix-case-union-with-folded-extension",
+      "category": "unicode-class-composition",
+      "prefix": "case",
+      "patterns": [
+        ":(glob,icase)[[:upper:]].TXT",
+        ":(glob,icase)[[:lower:]].TXT"
+      ]
+    },
+    {
+      "id": "unicode-ascii-class-plus-combining-bytes-no-normalization",
+      "category": "unicode-class-composition",
+      "prefix": "",
+      "patterns": [
+        ":(glob,icase)unicode/[[:alpha:]]??.TXT",
+        ":(exclude,literal)unicode/é.txt"
+      ]
+    },
+    {
+      "id": "unicode-literal-icase-does-not-fold-accent-or-normalize",
+      "category": "unicode-class-composition",
+      "prefix": "src",
+      "patterns": [
+        ":(top,literal,icase)unicode/É.txt",
+        ":(top,literal)unicode/é.txt"
+      ]
     }
   ]
 }
