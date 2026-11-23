@@ -43,6 +43,21 @@ PowerShell/macOS/Linux 都应给含特殊字符的规则加引号。`--` 之后�
 
 退出码：`0` 完成选择（包括空结果），`2` 参数、文件、配置、语法、范围或资源错误。错误 JSON 的 `selected` 为空，不返回部分选择结果。路径列表顺序保留，重复候选报错。
 
+## 应用案例：CI 发布文件选择
+
+[完整案例](examples/ci-package/README.md) 展示多包仓库从子目录发起发布：按
+`publish`、`generated`、`channel` 属性筛选，统一排除测试与私有目录，并附加根目录
+许可证。包含三组可运行输入、人工预期结果和逐文件解释，也演示四态属性及字面方括号。
+
+```sh
+node examples/ci-package/run.mjs
+node cli.mjs explain --input examples/ci-package/release.json
+```
+
+第一组选择 `LICENSE`、`packages/widget/src/api.mbt`、
+`packages/widget/docs/guide.md` 和 `packages/widget/assets/logo.svg`。
+案例使用调用者提供的合成清单；路径发现、属性来源和后续打包由接入方负责。
+
 ## MoonBit API
 
 从 Mooncakes 安装：`moon add 2111950632/moonpathspec`。在消费项目的 `moon.pkg` 中导入 `"2111950632/moonpathspec"`，即可通过 `@moonpathspec` 调用下述公开 API。

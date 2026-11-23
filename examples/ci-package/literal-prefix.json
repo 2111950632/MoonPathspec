@@ -1,0 +1,14 @@
+{
+  "prefix": "packages/widget",
+  "patterns": [
+    ":(literal)assets/logo[dark].svg",
+    ":(top,literal)LICENSE"
+  ],
+  "paths": [
+    "LICENSE",
+    "packages/widget/assets/logo[dark].svg",
+    "packages/widget/assets/logod.svg",
+    "tools/LICENSE",
+    "packages/other/assets/logo[dark].svg"
+  ]
+}

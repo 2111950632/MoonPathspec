@@ -1,0 +1,26 @@
+{
+  "patterns": [
+    ":(top,glob,attr:release)assets/**",
+    ":(top,glob,attr:-release)notes/**",
+    ":(top,glob,attr:!release)licenses/**",
+    ":(top,glob,attr:release=stable)metadata/**"
+  ],
+  "paths": [
+    "assets/set.txt",
+    "assets/value.txt",
+    "notes/unset.txt",
+    "notes/missing.txt",
+    "licenses/missing.txt",
+    "licenses/unset.txt",
+    "metadata/stable.json",
+    "metadata/set.json"
+  ],
+  "attributes": {
+    "assets/set.txt": {"release": true},
+    "assets/value.txt": {"release": "stable"},
+    "notes/unset.txt": {"release": false},
+    "licenses/unset.txt": {"release": false},
+    "metadata/stable.json": {"release": "stable"},
+    "metadata/set.json": {"release": true}
+  }
+}

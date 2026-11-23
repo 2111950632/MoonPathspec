@@ -1,0 +1,31 @@
+{
+  "prefix": "tools/release",
+  "patterns": [
+    ":(top,glob,attr:publish -generated channel=stable)packages/widget/**",
+    ":(top,exclude,glob)**/*_test.mbt",
+    ":(top,exclude)packages/widget/private",
+    ":(top,literal)LICENSE"
+  ],
+  "paths": [
+    "LICENSE",
+    "README.md",
+    "packages/widget/src/api.mbt",
+    "packages/widget/src/api_test.mbt",
+    "packages/widget/generated/version.mbt",
+    "packages/widget/private/debug.mbt",
+    "packages/widget/docs/guide.md",
+    "packages/widget/docs/draft.md",
+    "packages/widget/assets/logo.svg",
+    "packages/other/src/main.mbt"
+  ],
+  "attributes": {
+    "packages/widget/src/api.mbt": {"publish": true, "generated": false, "channel": "stable"},
+    "packages/widget/src/api_test.mbt": {"publish": true, "generated": false, "channel": "stable"},
+    "packages/widget/generated/version.mbt": {"publish": true, "generated": true, "channel": "stable"},
+    "packages/widget/private/debug.mbt": {"publish": true, "generated": false, "channel": "stable"},
+    "packages/widget/docs/guide.md": {"publish": true, "generated": false, "channel": "stable"},
+    "packages/widget/docs/draft.md": {"publish": true, "generated": false, "channel": "beta"},
+    "packages/widget/assets/logo.svg": {"publish": true, "generated": false, "channel": "stable"},
+    "packages/other/src/main.mbt": {"publish": true, "generated": false, "channel": "stable"}
+  }
+}

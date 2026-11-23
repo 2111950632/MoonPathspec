@@ -1,0 +1,44 @@
+[
+  {
+    "file": "release.json",
+    "name": "发布清单：稳定渠道、人工维护内容、测试与私有文件排除",
+    "selected": [
+      "LICENSE",
+      "packages/widget/src/api.mbt",
+      "packages/widget/docs/guide.md",
+      "packages/widget/assets/logo.svg"
+    ],
+    "decisions": [
+      {"path": "LICENSE", "selected": true, "included_by": [3], "excluded_by": [], "reason": "included_by_pattern"},
+      {"path": "packages/widget/src/api_test.mbt", "selected": false, "included_by": [0], "excluded_by": [1], "reason": "excluded_by_pattern"},
+      {"path": "packages/widget/private/debug.mbt", "selected": false, "included_by": [0], "excluded_by": [2], "reason": "excluded_by_pattern"},
+      {"path": "packages/widget/generated/version.mbt", "selected": false, "included_by": [], "excluded_by": [], "reason": "no_positive_match"}
+    ]
+  },
+  {
+    "file": "attribute-states.json",
+    "name": "属性四态：设置、取消设置、未指定、指定值",
+    "selected": [
+      "assets/set.txt",
+      "notes/unset.txt",
+      "licenses/missing.txt",
+      "metadata/stable.json"
+    ],
+    "decisions": [
+      {"path": "assets/value.txt", "selected": false, "included_by": [], "excluded_by": [], "reason": "no_positive_match"},
+      {"path": "notes/missing.txt", "selected": false, "included_by": [], "excluded_by": [], "reason": "no_positive_match"},
+      {"path": "licenses/missing.txt", "selected": true, "included_by": [2], "excluded_by": [], "reason": "included_by_pattern"},
+      {"path": "metadata/set.json", "selected": false, "included_by": [], "excluded_by": [], "reason": "no_positive_match"}
+    ]
+  },
+  {
+    "file": "literal-prefix.json",
+    "name": "子目录调用：字面括号文件名与根目录许可证",
+    "selected": ["LICENSE", "packages/widget/assets/logo[dark].svg"],
+    "decisions": [
+      {"path": "LICENSE", "selected": true, "included_by": [1], "excluded_by": [], "reason": "included_by_pattern"},
+      {"path": "packages/widget/assets/logo[dark].svg", "selected": true, "included_by": [0], "excluded_by": [], "reason": "included_by_pattern"},
+      {"path": "packages/widget/assets/logod.svg", "selected": false, "included_by": [], "excluded_by": [], "reason": "no_positive_match"}
+    ]
+  }
+]
