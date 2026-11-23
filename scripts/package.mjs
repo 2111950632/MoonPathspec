@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 mkdirSync(join(root,'dist'),{recursive:true});
 copyFileSync(join(root,'_build/js/release/build/cmd/bridge/bridge.js'),join(root,'dist/moonpathspec-core.js'));
-for(const name of ['LICENSE','NOTICE','THIRD_PARTY.md','host.mjs','cli.mjs']) copyFileSync(join(root,name),join(root,'dist',name));
+for(const name of ['LICENSE','NOTICE','THIRD_PARTY.md','host.mjs','io.mjs','cli.mjs']) copyFileSync(join(root,name),join(root,'dist',name));
 const metadata = JSON.parse(readFileSync(join(root,'package.json'),'utf8'));
 writeFileSync(join(root,'dist/manifest.json'),JSON.stringify({version:metadata.version,core:'moonpathspec-core.js',host:'host.mjs',cli:'cli.mjs',license:'Apache-2.0'},null,2)+'\n');
 console.log('Packaged standalone Node CLI, compiled MoonBit core and license notices in dist/.');

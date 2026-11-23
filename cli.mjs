@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { readFileSync } from 'node:fs';
 import { invoke } from './host.mjs';
+import { readText } from './io.mjs';
 
 const help = `MoonPathspec 0.1.0
 Usage: node cli.mjs [select|explain|inspect] [options] -- PATTERN...
@@ -17,12 +17,6 @@ Usage: node cli.mjs [select|explain|inspect] [options] -- PATTERN...
 Patterns and all selection semantics are evaluated by the MoonBit core.
 No patterns means the caller prefix's file set. Exit: 0 success, 2 error.
 `;
-
-function readText(path) {
-  const bytes = readFileSync(path === '-' ? 0 : path);
-  if (bytes.length > 16777216) throw new Error('File exceeds 16 MiB');
-  return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-}
 
 let json = false;
 try {
