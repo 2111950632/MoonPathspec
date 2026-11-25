@@ -1,146 +1,140 @@
-# GPP-1 compatibility profile
+# Git pathspec compatibility target
 
-GPP-1 is MoonPathspec's bounded, UTF-8 repository-relative file-selection
-profile. It is a library contract, not a claim of compatibility with every Git
-command, every filesystem, or every pathspec accepted by Git.
+## Completion target and version references
 
-The core takes a list of candidate file paths, an optional current-directory
-prefix, patterns, and an attribute callback. It returns a selection and
-per-candidate explanations. The caller owns discovery of candidates and
-attributes. The core does not read a Git index, walk a worktree, resolve symlinks,
-read Git configuration, or parse `.gitattributes`. Git is used by the test oracle,
-not by the matching implementation.
+The completion target is the **complete public pathspec syntax and matching
+semantics of Git 2.43.0 and Git 2.56.0** over caller-supplied UTF-8,
+repository-relative candidate files and typed attributes. GPP-1 describes the
+historical 0.1.x implementation only. It is not the completion target for the
+current work, and a new restricted profile must not replace the public target.
 
-## Reference and measured baseline
+The public references and fixed implementation references are:
 
-The normative reference is the Git glossary's
-[pathspec definition](https://git-scm.com/docs/gitglossary#def_pathspec).
-Related upstream regression sources include
-[literal/wildcard mode](https://github.com/git/git/blob/master/t/t6130-pathspec-noglob.sh),
-[icase](https://github.com/git/git/blob/master/t/t6131-pathspec-icase.sh),
-[exclusions](https://github.com/git/git/blob/master/t/t6132-pathspec-exclude.sh),
-[attributes](https://github.com/git/git/blob/master/t/t6135-pathspec-with-attrs.sh),
-and [literal wildcard characters](https://github.com/git/git/blob/master/t/t6137-pathspec-wildcards-literal.sh).
-Links to moving upstream branches are reference material, not frozen test results.
+| Version | Syntax and global settings | Semantic reference |
+| --- | --- | --- |
+| Git 2.43.0 | [glossary](https://github.com/git/git/blob/v2.43.0/Documentation/glossary-content.txt#def_pathspec), [git options](https://github.com/git/git/blob/v2.43.0/Documentation/git.txt) | [pathspec.c](https://github.com/git/git/blob/v2.43.0/pathspec.c), [dir.c](https://github.com/git/git/blob/v2.43.0/dir.c), [wildmatch.c](https://github.com/git/git/blob/v2.43.0/wildmatch.c), [parse.c](https://github.com/git/git/blob/v2.43.0/parse.c) |
+| Git 2.56.0 | [glossary](https://github.com/git/git/blob/v2.56.0/Documentation/glossary-content.adoc#def_pathspec), [git options](https://github.com/git/git/blob/v2.56.0/Documentation/git.adoc) | [pathspec.c](https://github.com/git/git/blob/v2.56.0/pathspec.c), [dir.c](https://github.com/git/git/blob/v2.56.0/dir.c), [wildmatch.c](https://github.com/git/git/blob/v2.56.0/wildmatch.c), [parse.c](https://github.com/git/git/blob/v2.56.0/parse.c) |
 
-The locally measured command-line baseline is **Git
-2.56.0.windows.4**. `tests/git_oracle.py` stages its own UTF-8 fixture paths and
-compares against `git ls-files --full-name -z -- <patterns>`. Attribute evidence
-comes from `git check-attr -z`, retaining Set, Unset, Unspecified, and string Value
-as separate states. Expected Git sets are restored to the caller's candidate
-order before comparison. The script records its Git version in the generated
-report; later runs may establish another measured baseline.
+Sources establish intended semantics, not that the current implementation has
+passed every case. Where glossary shorthand and observed matching behavior
+differ, retain the concrete fixed-version result in independent differential
+tests. Do not substitute intuitive shell matching, a generic regular-expression
+engine, or a stricter grammar.
 
-Windows Git's command-line path preprocessing can interpret backslashes as path
-separators. Such observations must not be described as direct execution of
-Unix-style backslash-escape matching. The report distinguishes equivalence
-checks from explicitly rejected profile inputs. Research observations retain
-Git's actual result even when MoonPathspec deliberately rejects the input.
-Passing a fixture establishes the behavior of that fixture and baseline; it is
-not a proof of all possible pathspec behavior. Consult the current generated
-report for actual pass/fail counts.
+## Input model and external responsibilities
 
-## Supported contract
+The library receives candidate file paths, a current-directory prefix, patterns
+and an optional attribute callback. Candidate order is preserved. The core owns
+parsing, matching, prefix/mode handling, attribute predicates, resource accounting,
+selection and explanations.
 
-| Area | GPP-1 behavior |
+The caller owns candidate discovery, conversion of physical paths to repository
+paths, Git index/tree/worktree membership, symlink discovery, filesystem casing,
+submodule enumeration, and attribute-file parsing and inheritance. A Git command
+adapter must supply that command's candidate set and worktree-derived attribute
+states. This separation does not exclude valid pattern syntax from the target.
+
+The String API represents UTF-8 paths, not arbitrary non-UTF-8 filename bytes; a
+future byte API is a separate representation concern. That boundary is not
+permission to reject backslash escapes or literal wildcard characters in UTF-8
+inputs. Candidates are canonical relative file paths using `/`; duplicate,
+empty, NUL, absolute and `.`/`..` candidate components fail validation.
+
+## Required matching semantics
+
+| Area | Target behavior |
 | --- | --- |
-| Candidate paths | UTF-8 file paths relative to a repository root; `/` separates components. Candidates must be canonical and unique. Input order is preserved. |
-| Prefix | A separate repository-relative current-directory prefix. Non-top patterns may navigate within the repository; attempts to leave its root fail. `top` anchors at the repository root and retains its raw body instead of applying current-directory path normalization. The caller's prefix is not itself case-folded by `icase`. |
-| Magic | Long-form `top`, `literal`, `glob`, `icase`, `exclude`, `attr:` and supported short signatures. Unknown magic and incompatible `literal,glob` fail explicitly. |
-| Default wildcards | `*` and `?` may consume `/`. Bracket expressions operate on bytes. |
-| Glob magic | Ordinary `*`, `?`, and bracket expressions do not consume `/`. A complete component of two or more stars is recursive; `**/` also consumes zero directories. A trailing `/**` consumes descendants. |
-| Non-component repeated stars | Ordinary non-recursive stars in glob mode. This follows the measured Git baseline rather than rejecting every placement discouraged by the glossary. |
-| Literal patterns | Metacharacters remain literal under `literal` magic. Literal directory names select supplied descendants; the library does not enumerate those descendants. |
-| Exclusion | Positive patterns form the initial set, then all matching exclusions remove paths. An exclusion-only list starts from the prefix's candidate scope. This is not `.gitignore`'s last-matching-rule model. |
-| Bare `:` | A prefix-scoped all-paths positive entry, including when combined with other positive patterns. Its measured `ls-files` behavior is recorded separately from the glossary's advice against mixing it. |
-| `icase` | ASCII byte case behavior. There is no Unicode case folding or normalization. Bracket singleton, range, and POSIX-class behavior are represented separately to retain Git's observed distinctions. |
-| Attributes | `ATTR`, `-ATTR`, `!ATTR`, and `ATTR=VALUE` query the callback's typed state. All conditions on a pattern must pass. An absent callback reports Unspecified. The core does not substitute tree-object attributes for worktree attributes. |
-| Explanations | Include/exclude pattern indices, decision reason, and bounded work accounting are returned from the same selection evaluation. |
-| Errors | Structured errors carry their applicable pattern/path index and zero-based UTF-8 byte offset. A failed or budget-exhausted match is not returned as a successful negative decision. |
+| Raw path matching | Retain Git's exact-name and descendant comparison before wildcard evaluation. A raw name containing `[`, `*` or `?` can match itself as well as another name through wildcards. |
+| Default wildcards | Default `*` and `?` may consume directory separators. Current-directory preprocessing and path scope follow pathspec, not gitignore rules. |
+| Glob magic | Ordinary wildcard tokens do not consume `/`. Recursive star components, zero-directory `**/`, trailing `/**`, repeated stars and escaped separators follow the fixed Git matcher behavior. |
+| Escapes | Backslash quotes the following byte during wildcard matching, including literal `[ ] ? *` mixed with active wildcards. An escape after a star is not a reason to reject the pattern. Literal magic instead treats the whole body literally. |
+| Character classes | Byte sets, negation, ranges, escaped members and C-locale POSIX classes follow Git. Unclosed or malformed classes and descending ranges retain raw-name fallback and Git's wildcard result; they do not become new compile errors. |
+| Magic | Short forms and optional delimiter; long top/literal/glob/icase/exclude/attr; repeated and empty words where accepted; unknown/conflicting magic errors. Escaped delimiters are scanned before attribute values are unescaped and validated. |
+| Prefix | Separate current-directory prefix, non-top navigation within repository scope, top root anchoring, and accepted `prefix:N` as a byte count with root-context validation and a case-sensitive protected prefix. |
+| Case | ASCII/C-locale byte rules, including distinct singleton/range/POSIX-class behavior. Protected prefix bytes are not case-folded. This is not Unicode normalization. |
+| Attributes | Set, Unset, Unspecified and Value are distinct. All ATTR/-ATTR/!ATTR/ATTR=VALUE conditions must pass. Accepted value escapes include a comma. Missing callback means Unspecified. |
+| Composition | Positive union followed by all exclusions. Exclusion-only input starts within the caller prefix. Bare `:` and combinations are tested against the recorded command/version. |
+| Failure | Git-invalid magic/settings are structured errors. Wildcard failure remains nonmatch; resource exhaustion remains error. No partial successful selection is returned on failure. |
 
-For example, default `doc/*.jpg` can select both `doc/a.jpg` and
-`doc/sub/b.jpg`. `:(glob)doc/*.jpg` selects only the former. Under the measured
-baseline, `:(icase,glob)[A]` and `:(icase,glob)[A-Z]` have different behavior;
-GPP-1 does not replace bracket matching with a generic Unicode case-insensitive
-regular expression.
+Concrete expectations are in the [13-case escaped-pattern
+suite](../examples/escaped-pathspec/README.md). API strings, JSON escaping and
+shell quoting are separate layers. Synthetic Windows-illegal worktree names may
+be staged directly in an independent index; this does not claim NTFS supports
+creating those files.
 
-`?` consumes one UTF-8 byte, not one Unicode scalar or grapheme. Thus one `?`
-does not match the two-byte encoding of `é`. This byte behavior does not imply
-support for arbitrary non-UTF-8 filenames: the public inputs are MoonBit strings.
+## POSIX and Windows path preprocessing
 
-## Explicit boundaries
+`default_pathspec_options()` selects POSIX semantics on every host. Strings are
+the pattern bytes after shell argument parsing, not shell source text. A Windows
+host must not silently turn backslash escapes into separators.
 
-GPP-1 excludes arbitrary non-UTF-8 filenames, absolute/drive/UNC path resolution,
-host filesystem case rules, Unicode folding, repository discovery, tracked versus
-untracked classification, sparse indexes, submodule traversal, symlink traversal,
-revision/path ambiguity, command-specific pathspec options, and environment
-variables such as `GIT_LITERAL_PATHSPECS`. These belong in adapters or future
-separately tested profiles.
+`options.windows=true` (CLI `--path-mode windows`) explicitly requests Windows
+Git-style preprocessing. Non-top bodies and caller prefix receive separator
+treatment; top and explicit `prefix:N` retain the body where the fixed baseline
+does so. Candidates remain repository paths with `/`. This mode is checked
+separately against Windows Git. Native Linux Git must verify POSIX non-top
+cases; top-mode Windows observations cannot be relabeled as a Linux run.
 
-Candidates, prefixes and pattern bodies starting with `/`, a backslash, or an
-ASCII drive designator such as `C:` are rejected on every backend. This also
-excludes drive-relative forms and otherwise legal Unix filenames with that
-spelling; they are not silently treated as portable repository paths.
+## Global settings and environment
 
-The wildcard parser reports unterminated bracket expressions, dangling escapes,
-descending byte ranges, unknown POSIX class names, collating symbols, and
-equivalence classes as explicit errors. It supports the ASCII/C-locale classes
-`alnum`, `alpha`, `blank`, `cntrl`, `digit`, `graph`, `lower`, `print`, `punct`,
-`space`, `upper`, and `xdigit`. A POSIX class cannot be used as a range endpoint.
-These strict diagnostics are part of GPP-1; they are not a claim that every Git
-version diagnoses those inputs in the same way.
+The public `PathspecOptions` record contains `literal`, `glob`, `noglob`, `icase`
+and `windows`. The library takes explicit values and never reads process
+environment variables. The JSON bridge accepts only these Boolean fields in
+`options`. `inspect` returns merged settings and each pattern's `prefix_length`.
 
-Any backslash in a **non-literal pattern body** is rejected publicly with
-`unsupported_backslash`. Use `:(literal)` to select filenames containing wildcard
-metacharacters instead of relying on backslash escapes. This is a deliberate
-cross-platform profile boundary: Windows Git command-line path preprocessing
-must not be mistaken for Unix wildcard escape matching. Escapes inside attribute
-magic values are parsed by the magic parser and are a separate grammar.
+| Setting | Effect |
+| --- | --- |
+| Global literal | Disable wildcard and magic interpretation, including a leading colon. |
+| Global glob | Apply glob except where local literal overrides it. |
+| Global noglob | Apply literal except where local glob overrides it; local magic is still parsed. |
+| Global icase | Combine case-insensitive matching with other accepted modes. |
 
-The internal matcher retains escape decoding so that literal-mode compilation
-can quote metacharacters without a host regular-expression engine. Its
-`unsupported_glob_escape` diagnostic for a star immediately followed by an escape
-is internal; public non-literal patterns encounter `unsupported_backslash`
-first. Internal escape handling is not a public promise of Unix command-line
-escape compatibility.
+Global glob/noglob conflict. Global literal conflicts with global glob or icase;
+literal plus noglob is accepted. Local literal/glob still conflict. Positive and
+negative CLI flags set their corresponding field; its last explicit value wins.
 
-## Resource contract
+The host may transport four original strings, `GIT_LITERAL_PATHSPECS`,
+`GIT_GLOB_PATHSPECS`, `GIT_NOGLOB_PATHSPECS` and `GIT_ICASE_PATHSPECS`, in the
+JSON `environment` object. MoonBit parses case-insensitive true/yes/on and
+false/no/off, empty false, and Git's signed Int32 base-zero integers with optional
+k/m/g factors. Nonzero means true. Unknown names, non-string values, malformed
+numbers and overflow are errors. JSON options override corresponding raw
+environment values; CLI options override JSON fields. Node transports values
+and flags; it does not implement matching or Boolean conversion.
 
-Public `Limits` bound pattern count, individual and aggregate pattern bytes,
-candidate count, path bytes, work per match, and total selection work. The
-selector validates configured limits against hard ceilings. The wildcard core
-also independently rejects patterns above 65,536 bytes and texts above 262,144
-bytes. Public selection limits can be smaller.
+## Resource and mutability contract
 
-Compiled state is capped at 65,536 units across the complete plan. Each token
-costs one unit; a bracket class additionally costs sixteen units for its two
-eight-word UInt32 bitsets. The compiler charges before allocating the next
-token/class and returns `compile_limit` on exhaustion. This is a compile-memory
-guard separate from matching work. Character classes do not allocate 512
-Boolean array slots each.
+Limits protect resource use without labeling legitimate syntax unsupported.
+Defaults are 256 patterns, 4096 bytes per pattern, 16384 bytes per path, 100000
+candidates and 2000000/20000000 match/selection work units. Hard ceilings are
+4096 patterns, 65536 bytes per pattern/path, 1000000 candidates and
+100000000/200000000 work units. Aggregate patterns are capped at 1 MiB; compiled
+state at 65536 units. A token costs one and a class with its bitsets seventeen.
 
-The matcher uses reachable-byte-offset dynamic-programming rows, with no
-recursive backtracking. Memory is proportional to the path's byte length; work
-is bounded by the supplied step budget and the product of token and path counts.
-One examined DP cell is one reported matching step, with an initial step for the
-starting state. Step counts are deterministic work units, not elapsed-time or
-whole-process memory guarantees. Compilation, UTF-8 conversion, candidate
-validation, and callback work have their own bounded inputs and are not DP cells.
-An attribute callback is supplied by the caller and must itself terminate.
-Each `select` call snapshots its candidate array before validation and callbacks.
-Replacing, appending or clearing the caller's array during an attribute query
-cannot change that in-flight selection or bypass canonical/count/byte checks.
-Attribute values themselves remain caller-controlled; use a stable callback
-when reproducible results are required.
+Matching uses iterative DP rather than exponential backtracking. Steps are
+deterministic work units, not CPU instructions or a whole-process memory/time
+guarantee. Input conversion, validation and callback work are not DP cells.
+JSON input is limited to 16 MiB/depth 64; batches to 256 requests/200000000 units.
+Matching exhaustion stops without partial batch results.
 
-## Implementation and evidence status
+Selection snapshots candidates before validation and callbacks. Replacing,
+appending or clearing the caller array cannot alter that in-flight selection.
+Attribute values remain caller-controlled; reproducible callers must provide a
+stable, terminating callback.
 
-The MoonBit parser, compiler, byte matcher, selector, and explanation logic are
-new implementation for this project. Git and existing MoonBit projects are
-references and independent test baselines; their implementation is not copied
-into this core. See [the ecosystem comparison](ECOSYSTEM.md) for the frozen
-existing-project baseline and the specific incremental scope.
+## Current verification status
 
-Current source, successful local verification, public publication, and organizer
-acceptance are distinct states. This document does not assert publication or
-contest acceptance, and deliberately does not freeze a dynamic test count.
+The [0.2.0 local record](../evidence/validation-0.2.0.json) passed 74 core
+cases on each JS/Wasm GC backend, 40 Node cases, 13 runnable examples, and 7
+own public-API cases per backend from the actual extracted package. Native
+Windows Git 2.56.0 passed 444 general differential cases and 352 extended
+escape/settings cases. Seven POSIX-only cases were not run there and are not
+counted as passed.
+
+Native Linux Git 2.43.0 and 2.56.0, the online platform matrix and 0.2.0 registry
+publication/download remain pending. The workflow source is not execution
+proof. Historical 0.1.x evidence retains its original scope. Implementation
+tests, independent Git runs, package extraction, actual network download and
+organizer review are separate claims. A finite suite is evidence for its
+recorded inputs and versions, not a proof of every possible pathspec. Remaining
+legal-syntax gaps must be fixed, not converted to permanent profile exclusions.

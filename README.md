@@ -1,27 +1,22 @@
 # MoonPathspec
 
-MoonBit 原生 Git Pathspec 文件集合选择引擎。为构建工具、打包工具、变更影响分析和 CI 提供可嵌入的规则编译、路径选择及原因解释。维护者：石子硕（GitHub：2111950632）。当前代码版本：0.1.1。[更新记录](CHANGELOG.md)。
+MoonBit 原生 Git pathspec 文件集合选择引擎。面向构建、打包、变更影响分析和 CI 工具，提供规则编译、文件选择及逐文件原因解释。维护者：石子硕（GitHub：2111950632）。[更新记录](CHANGELOG.md) · [项目申报书](项目申报书.md)。
 
-0.1.1 已通过 [Linux 与 Windows 完整线上验证](https://github.com/2111950632/MoonPathspec/actions/runs/45131357219)，并发布至 [Mooncakes](https://mooncakes.io/docs/2111950632/moonpathspec%400.1.1)。仓库外独立项目实际下载后，JavaScript 与 Wasm GC 各 5 项公开 API 测试通过，7 个生产 MoonBit 源文件及 4 个清单/接口文件逐字节一致。见 [本地验证](evidence/validation-0.1.1.json)、[线上核验](evidence/github-validation-0.1.1.json)及[发布与下载验证](evidence/mooncakes-validation-0.1.1.json)。0.1.0 历史记录保留在 evidence 中。
+兼容终点是 **Git 2.43.0 与 2.56.0 的完整公共 pathspec 语法和路径匹配语义**，输入模型为调用者提供的 UTF-8 仓库相对候选文件、当前目录 prefix 和四态属性。0.1.x 的 GPP-1 是历史范围，本轮不再以自行缩小的语法子集作为完成终点。目标、版本差别和责任边界见[兼容说明](docs/COMPATIBILITY.md)。
 
-核心由 MoonBit 实现，调用者提供仓库相对文件路径和属性查询函数。Node.js 只负责命令行、文件输入输出和运行编译产物。运行时不调用 Git，不读取 Git index，不遍历仓库，不自行解析 `.gitattributes`。Git 只作为独立测试参考。
+**0.2.0 本地整套验证已通过。** JS/Wasm GC 各 74 项核心测试、Node 40 项、13 个组合案例；Windows Git 2.56.0 常规差分 444 项、扩展差分 352 项通过，7 项仅原生 POSIX 场景明确未运行。独立解压包公开 API 两后端各 7 项通过，分发包在源码树外运行通过，见[本地记录](evidence/validation-0.2.0.json)。Linux 双版本对照、线上平台矩阵和 0.2.0 网络发布仍待完成，不由本地数据推定。0.1.x 证据保留为历史。
 
-一页 [项目申报书](项目申报书.md) 包含目标、现有基础、增量、实现范围、验证与后续计划。
+解析、匹配、属性条件、路径模式处理、预算和 JSON 诊断均由 MoonBit 实现。Node.js 负责命令行、UTF-8 文件输入输出和运行编译产物；运行时不启动 Git。候选发现、Git index、工作树枚举和 `.gitattributes` 的解析由接入方负责。
 
 ## 相对已有生态的增量
 
-已有 `mizchi/bit_ignore`、glob 包及 bit 内部的部分 Pathspec 实现。本项目聚焦独立可复用的 magic 解析、默认通配与 glob 模式差别、top/prefix、组合排除、四态属性条件及解释接口。查重基线和固定源码链接见 [生态对照](docs/ECOSYSTEM.md)，不宣称生态绝对空白。
+已有 bit、`mizchi/bit_ignore` 和多个 glob 包，本项目承认其通配、prefix、排除及解释等既有能力。交付重点是独立 MoonBit API 中的完整公共 pathspec 匹配目标、结构化 magic、四态属性、显式全局模式、精确语义回归及可审计失败。重叠和固定源码基线见[生态对照](docs/ECOSYSTEM.md)，不宣称各项能力独有。
 
-例如候选路径为 `doc/a.jpg` 和 `doc/sub/b.jpg` 时：
-
-| 规则 | 选择结果 |
-|---|---|
-| `doc/*.jpg` | 两个路径 |
-| `:(glob)doc/*.jpg` | 仅 `doc/a.jpg` |
+例如 `doc/*.jpg` 的默认星号可选择 `doc/a.jpg` 与 `doc/sub/b.jpg`；`:(glob)doc/*.jpg` 仅选择前者。`:(glob)docs/*\[draft\].txt` 在一条规则内同时使用通配星号和字面方括号；`:(literal)` 则让整条主体按字面匹配，不能替代部分转义。
 
 ## 安装与运行
 
-源码运行需 [MoonBit](https://www.moonbitlang.com/download)（moonc >= 0.10.22）及 Node.js >= 20。完整独立验证还需 Python >= 3.9 和 Git；没有第三方 Python/npm 运行依赖。
+源码运行需 [MoonBit](https://www.moonbitlang.com/download)（moonc >= 0.10.22）及 Node.js >= 20。独立对照验证另需 Python >= 3.9 与 Git，无第三方 Python/npm 运行依赖。
 
 ```sh
 git clone https://github.com/2111950632/MoonPathspec.git
@@ -33,36 +28,42 @@ node cli.mjs --input examples/attributes.json --json
 node cli.mjs --input examples/literal.json --json
 ```
 
-三个输入分别选择 `main.mbt` 与 `src/parser.mbt`、`src/hand.mbt`、`src/a[1].mbt`。`explain` 显示每个文件被哪项规则包含或排除。示例是自行编写的文件清单，无需真实 Git 仓库或设备。
+三个最小输入分别选择 `main.mbt` 与 `src/parser.mbt`、`src/hand.mbt`、`src/a[1].mbt`。数据为自编候选清单，无需真实 Git 仓库。
 
 ```sh
-node cli.mjs --path doc/a.jpg --path doc/sub/b.jpg -- ':(glob)doc/*.jpg'
-node cli.mjs inspect -- ':(top,icase,glob)**/*.md'
+node examples/escaped-pathspec/run.mjs
+node cli.mjs --input examples/escaped-pathspec/02-glob-plus-escaped-brackets.json --json
+node examples/ci-package/run.mjs
+```
+
+[13 个转义组合案例](examples/escaped-pathspec/README.md)涵盖字面 `[ ] ? *` 与通配混用、literal/glob/exclude、prefix/top/attr、未闭合字符类、原文精确匹配及 Windows 预处理。每例列出完整输入、独立预期、选择结果与解释；研究预期、实现运行通过和独立 Git 对照状态分开记录。
+
+[CI 发布清单案例](examples/ci-package/README.md)模拟按发布/生成/渠道属性选择文件、排除测试与私有目录并附加许可证。两个案例集都是自编工作流，不宣称已被外部构建系统采用。
+
+## 命令行、路径模式与全局设置
+
+```sh
+node cli.mjs --glob-pathspecs --path doc/a.jpg --path doc/sub/b.jpg -- 'doc/*.jpg'
+node cli.mjs inspect --icase-pathspecs -- ':(prefix:4)src/A.txt'
+node cli.mjs --path-mode posix --input examples/escaped-pathspec/01-escaped-brackets.json
 node cli.mjs --help
 ```
 
-PowerShell/macOS/Linux 都应给含特殊字符的规则加引号。`--` 之后全部作为规则。`--paths FILE` 支持每行一个路径，`--null-input` 改为 NUL 分隔；`--null` 使用 NUL 分隔输出。`--input -` 读取标准输入 JSON。输入文件以严格 UTF-8 解码，非法字节不会被替换后继续匹配。
+默认使用 **POSIX 路径语义**，宿主运行在 Windows 不会自动切换。显式 `--path-mode windows` 或 JSON `options.windows=true` 启用 Windows Git 的非 top 路径预处理；实际匹配规则与 magic 仍由核心处理。候选路径统一用 `/`。
 
-退出码：`0` 完成选择（包括空结果），`2` 参数、文件、配置、语法、范围或资源错误。错误 JSON 的 `selected` 为空，不返回部分选择结果。路径列表顺序保留，重复候选报错。
+全局选项为 `--literal-pathspecs`、`--glob-pathspecs`、`--noglob-pathspecs`、`--icase-pathspecs`，对应 `--no-…-pathspecs` 可关闭同一设置。literal 全局模式同时关闭 magic 解析；noglob 仍允许某条 `:(glob)` 覆盖，glob 允许某条 `:(literal)` 覆盖。
 
-## 应用案例：CI 发布文件选择
+Node 将四个 `GIT_*_PATHSPECS` 环境变量的原始字符串交给 MoonBit 解释。优先级为显式 CLI 字段、JSON `options` 字段、环境变量；未知字段、非法类型/布尔值和冲突返回错误。库 API 本身不读取进程环境。详见[全局设置规范](docs/COMPATIBILITY.md#global-settings-and-environment)。
 
-[完整案例](examples/ci-package/README.md) 展示多包仓库从子目录发起发布：按
-`publish`、`generated`、`channel` 属性筛选，统一排除测试与私有目录，并附加根目录
-许可证。包含三组可运行输入、人工预期结果和逐文件解释，也演示四态属性及字面方括号。
+PowerShell/Bash 应以单引号保护含特殊字符的规则，避免 shell 提前展开。API 中一个反斜线在 JSON 文本中写作 `\\`，shell 外层引号不是规则的一部分。cmd.exe 引号规则不同，可直接使用 JSON 输入文件。
 
-```sh
-node examples/ci-package/run.mjs
-node cli.mjs explain --input examples/ci-package/release.json
-```
-
-第一组选择 `LICENSE`、`packages/widget/src/api.mbt`、
-`packages/widget/docs/guide.md` 和 `packages/widget/assets/logo.svg`。
-案例使用调用者提供的合成清单；路径发现、属性来源和后续打包由接入方负责。
+`--` 后全部视为规则；`--paths FILE` 默认按行读取，`--null-input` 改为 NUL 分隔，`--null` 输出 NUL 分隔结果；`--input -` 读取标准输入。严格 UTF-8 解码，非法字节不替换后继续匹配。退出码 `0` 为成功（包括空集），`2` 为调用、配置、输入或资源错误；失败不返回部分选择结果。
 
 ## MoonBit API
 
-从 Mooncakes 安装：`moon add 2111950632/moonpathspec`。若本地索引尚未包含刚发布的版本，先运行 `moon update` 后重试。在消费项目的 `moon.pkg` 中导入 `"2111950632/moonpathspec"`，即可通过 `@moonpathspec` 调用下述公开 API。
+已发布版本可用 `moon add 2111950632/moonpathspec` 安装；索引未更新时先运行 `moon update`。当前已确认的网络发布记录为 0.1.1；本轮新增语义在新版发布前请使用源码，不能据旧版本记录宣称新接口已发布。
+
+在消费项目 `moon.pkg` 导入 `"2111950632/moonpathspec"`：
 
 ```moonbit
 let plan = @moonpathspec.compile([
@@ -77,53 +78,34 @@ let reason = @moonpathspec.explain(plan, "vendor/a.mbt").unwrap()
 // reason.selected == false; reason.excluded_by == [1]
 ```
 
-属性值分 `Set`、`Unset`、`Unspecified`、`Value(String)`。`select(..., attribute=fn(path, name) { ... })` 接受调用者的纯查询函数；不提供时全部为 Unspecified。回调内部耗时不能由库计量，调用者应保持其有界。
+`compile(..., options={ ..default_pathspec_options(), glob: true })` 接受显式全局选项；`parse_pattern` 检查 magic，`ParsedPattern.prefix_length` 保留 `prefix:N` 字节长度。四态属性为 `Set`、`Unset`、`Unspecified`、`Value(String)`，由 `select(..., attribute=fn(path, name) { ... })` 查询。
 
-公开接口见 [pkg.generated.mbti](pkg.generated.mbti)。`parse_pattern` 可单独检查 magic；`compile` 返回不透明 Plan，调用者修改原输入数组不会改变它。`dispatch` 是版本 1 JSON 桥接入口。
+Plan 不透明，编译后修改原规则数组不改变计划；每次选择在查询属性前保存候选快照。属性回调由调用者控制，应保持稳定并有界。公开接口见 [pkg.generated.mbti](pkg.generated.mbti)，JSON 桥接由 `dispatch` 提供。
 
-## GPP-1 支持边界
+## 匹配与 API 边界
 
-- UTF-8、规范化的仓库相对候选文件路径；分隔符为 `/`，拒绝 NUL、空路径、Windows 盘符或反斜线开头的路径（含盘符相对形式）、绝对路径及 `.`/`..` 候选组件。普通规则按 prefix 归一化；`top` 规则保留主体原文，按仓库根比较。
-- long/short magic：top、literal、glob、icase、exclude、四态 attr 条件。未知 magic 和 literal/glob 冲突明确报错。裸 `:` 作为 prefix 文件集的正项；包含规则取并集，排除在最后生效。
-- 字节通配、ASCII icase、字符类及列明的 POSIX 类。`?` 匹配一个 UTF-8 字节，不是一个可见字符；调用者 prefix 不被 icase 折叠。
-- 跨平台首版拒绝非 literal 主体中的反斜线，返回 `unsupported_backslash`；需要字面括号等字符时用 `:(literal)`。属性 magic 值的转义不受此主体限制。literal 中反斜线按字面字节处理，不当作 Windows 分隔符。
-- 不支持 Git 内部 magic、任意非 UTF-8 文件名、所有 Git 子命令特殊处理、环境变量改变的全局 pathspec 模式及完整 Git 文件系统行为。
+兼容工作覆盖完整公共 magic、默认/glob/literal、反斜线转义、字符类、递归星号、prefix/top、排除与属性、全局选项及其组合。非法 magic 与失败的通配尝试不同：未闭合 `[`、尾随反斜线或倒序范围不得一律改成配置错误；原字符串同名候选还可走 Git 的精确匹配路径。
 
-完整规范、已知平台差别和错误边界见 [兼容合同](docs/COMPATIBILITY.md)。这是显式范围内的兼容库，不是 Git 的完整替代品。
+API 使用 UTF-8 字符串及规范仓库相对文件路径，保留输入顺序并拒绝重复候选。`?` 按一个 UTF-8 字节匹配，`icase` 按 Git 的 ASCII/C-locale 字节行为处理。非 UTF-8 文件名需要另行设计字节 API；这一输入表示边界不用于排除合法 pathspec 转义或其他合法语法。
 
-## 资源限制
+接入方负责物理路径到仓库路径的转换、文件发现、索引/树对象来源、符号链接、工作树属性与 Git 子命令专属参数。完整 pathspec 匹配目标不表示实现整个 Git CLI 或文件系统。
 
-默认最多 256 条规则、每规则 4096 字节、每路径 16384 字节、100000 个候选；每次通配匹配 2000000 工作单位，整次选择 20000000。工作单位包括匹配 DP 单元格、路径/字面比较及属性条件预留，不等同于 CPU 指令或耗时。失败条件查询也计费；不足时明确失败。
+## 资源限制与验证
 
-配置必须为正整数且不超过硬上限：规则 4096、每规则/路径 65536 字节、候选 1000000、单匹配 100000000、总选择 200000000；规则总字节另限 1 MiB。编译总状态限 65536，普通 token 计 1、字符类及其两张 256-bit 掩码计 17；分配前检查，超限返回 `compile_limit`。JSON 输入限 16 MiB、深度 64；测试批量入口限 256 项、总工作 200000000，任一匹配耗尽预算就停止批量而不返回部分结果。匹配采用迭代 DP，避免指数递归回溯。
+默认规则数 256、每规则 4096 字节、每路径 16384 字节、候选 100000；单次通配 2000000 工作单位、总选择 20000000。硬上限分别为规则 4096、规则/路径 65536 字节、候选 1000000、单次 100000000、总选择 200000000；规则总字节另限 1 MiB，编译状态限 65536。JSON 输入限 16 MiB、深度 64，批量限 256 项及总工作 200000000。资源错误独立于“不匹配”，不会作为成功负结果返回。
 
-## 验证
-
-0.1.1 [完整本地验证](evidence/validation-0.1.1.json)：JS 与 Wasm GC 各 65 项核心测试、34 项 Node 集成/边界/场景/分发测试、424 项 Git 等价对照及另计的 20 项范围拒绝全部通过。实际包解压后的独立消费在两种后端各通过 5 项公开 API 测试。网络发布与线上 CI 以各自记录为准。
+工作单位不是耗时或 CPU 指令；调用者回调耗时不受库计量。匹配使用有预算的迭代 DP，候选与输入有独立限制。
 
 ```sh
-moon check --target all --deny-warn
-moon test --target js --deny-warn
-moon test --target wasm-gc --deny-warn
-moon fmt --check
-moon info
-moon build --target js --release --deny-warn
-npm test
-python tests/git_oracle.py
+npm run verify
 ```
 
-`npm run verify` 顺序完成上述检查，以及真实 `moon package` 解包后的独立公共 API 消费和 JS 分发包生成。生成的 `dist/` 可以单独复制并以 Node 运行，验证还会把它复制到源码树外实际执行。可用 `MOONPATHSPEC_MOON`、`MOONPATHSPEC_PYTHON`、`MOONPATHSPEC_GIT` 指定工具路径。缺少工具、Git 不一致、预算错误或构建失败都会停止，不会跳过后宣称通过。
+完整验证包括检查、构建、JS/Wasm GC 核心测试、格式与接口核对、Node 命令行/案例/分发测试、独立 Git 对照、真实打包解压消费和源码树外分发运行。`MOONPATHSPEC_MOON`、`MOONPATHSPEC_PYTHON`、`MOONPATHSPEC_GIT` 可指定工具。每个对照结果必须记录实际 Git 版本与路径模式，Linux 的精确非 top 转义对照须由原生 Linux Git 执行。
 
-Git 对照脚本创建临时仓库，逐次调用 `git ls-files --full-name -z`；固定案例和固定种子生成案例均由独立 Git 得到预期，不调用生产 matcher 造答案。支持范围内等价案例与明确范围拒绝案例分开计数，报告保留 Git 实际结果、版本、输入摘要和失败详情。CI 已在 Linux 与 Windows 两个平台完成首次完整验证。
-
-`scripts/check-consumer.py` 从真实发布 ZIP 提取源码并建立单独消费项目；这是打包使用验证，不能冒充 Mooncakes 网络下载验证。`node scripts/count-source.mjs` 将生产 MoonBit、测试分开统计，结果不是组委会认证的有效代码行。
-
-注册表消费复验可在仓库外建立独立目录，使用 [发布验证记录](evidence/mooncakes-validation-0.1.1.json) 中的模块及包清单，将 [消费用例](tests/registry_consumer.mbt.fixture) 保存为 `registry_consumer_test.mbt`，然后运行记录中的两种后端测试命令。不要加入本地路径覆盖或 workspace 替代依赖。
+打包解压消费不等于 Mooncakes 网络下载；两者分别记录。验证启动即失效旧成功状态，失败停止。源码计数将生产与测试分开，不作为组委会认证代码量。当前数量与状态见[本版验证记录](evidence/validation-0.2.0.json)，旧版数据不累加为本轮完成数量。
 
 ## 结构与开源
 
-`parser.mbt` 解析 magic，`glob.mbt` 实现有预算字节匹配，`selector.mbt` 编译并选择文件集，`protocol.mbt` 验证 JSON 请求和输出；`model.mbt` 是公开模型。`*_wbtest.mbt` 为核心测试，`tests/` 包含宿主集成与独立 Git 对照，`examples/` 提供最小可运行输入。
+`parser.mbt` 解析 magic/全局选项，`glob.mbt` 实现字节匹配，`selector.mbt` 编译并选择，`protocol.mbt` 验证 JSON、转换环境布尔值并输出；`model.mbt` 定义模型。`*_wbtest.mbt`、`tests/` 和 `examples/` 提供回归、独立对照及运行案例。
 
-本项目为十一月独立新项目。十月 CatalogGuard 已通过验收，其翻译目录检查代码不作为本项目新增成果。使用 AI 辅助开发，维护者负责解释、验证及维护。代码使用 Apache-2.0；标准库归属及参考说明见 [NOTICE](NOTICE)、[THIRD_PARTY.md](THIRD_PARTY.md)。
-
-比赛方向和生态增量自查不等于主办方审核结论。十一月报名及验收截止以官方最新通知为准。
+十一月项目新写路径匹配与文件选择核心，十月 CatalogGuard 的翻译目录检查不作为本项目新增成果。使用 AI 辅助开发，维护者负责解释、验证及维护。项目采用 Apache-2.0，来源与保留声明见 [THIRD_PARTY.md](THIRD_PARTY.md)、[NOTICE](NOTICE)。审核结论和截止日期以主办方通知为准。
