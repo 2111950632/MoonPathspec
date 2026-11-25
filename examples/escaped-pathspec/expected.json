@@ -15,7 +15,7 @@
     "command": "git ls-files --full-name -z -- <patterns>",
     "fixture": "Temporary index populated through git update-index -z --index-info; indexed UTF-8 names include literal * and ? without requiring Windows worktree files. Attributes read back with git check-attr -z.",
     "gitattributes": "docs/** publish -generated kind=text\ndocs/b* generated\n",
-    "limitations": "Most escape requests use top magic to preserve raw pattern bytes on Windows. This is not a claim to have executed native POSIX Git. Case 08 exact non-top POSIX argv still needs Linux verification."
+    "limitations": "Historical first Windows measurement used top magic for raw pattern bytes; case 08 exact POSIX argv was pending then. This is superseded by the separate subsequent_native_validation record, not retroactively called POSIX execution."
   },
   "cases": [
     {
@@ -137,7 +137,7 @@
         "docs/b[draft].txt",
         "LICENSE"
       ],
-      "oracle": "normalization-equivalent top input measured on Windows; exact non-top POSIX argv pending Linux verification"
+      "oracle": "Exact non-top POSIX argv independently passed native Linux Git 2.43.0 and 2.56.0 in the subsequent CI record."
     },
     {
       "file": "09-malformed-bracket-fallback.json",
@@ -196,5 +196,20 @@
       ],
       "oracle": "Git 2.56.0.windows.4 non-top argv independently executed"
     }
-  ]
+  ],
+  "subsequent_native_validation": {
+    "version": "0.2.1",
+    "source_commit": "43002de14eef4fdd8aa620dcc37fe31b2469879d",
+    "linux_git_versions": [
+      "2.43.0",
+      "2.56.0"
+    ],
+    "linux_case_numbers": "01-12 including exact non-top case 08",
+    "linux_workflow": "https://github.com/2111950632/MoonPathspec/actions/runs/45589748234",
+    "windows_git_version": "2.56.1.windows.1",
+    "windows_case_numbers": "01-07,09-13",
+    "windows_workflow": "https://github.com/2111950632/MoonPathspec/actions/runs/45589748354",
+    "status": "passed",
+    "scope": "Each platform runs only applicable exact argv; not_run cases are not counted as passed."
+  }
 }

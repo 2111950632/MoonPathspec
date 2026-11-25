@@ -87,6 +87,6 @@ node cli.mjs explain --input examples/ci-package/literal-prefix.json
 
 ## 使用边界与失败处理
 
-候选必须是规范化、仓库相对 UTF-8 文件路径，统一使用 `/`。属性表是调用者提供的确定输入，示例不模拟 Git 的属性继承、宏或优先级。完整支持范围见 [GPP-1 合同](../../docs/COMPATIBILITY.md)。
+候选必须是规范化、仓库相对 UTF-8 文件路径，统一使用 `/`。属性表是调用者提供的确定输入，示例不模拟 Git 的属性继承、宏或优先级。完整支持范围见 [Git 兼容目标与输入边界](../../docs/COMPATIBILITY.md)。
 
 生产调用方应先检查响应的 `exit_code`：`0` 表示成功，含合法空结果；`2` 表示输入、语法或资源错误。错误时 `selected=[]`，不能把错误当作成功的空发布包。需要机器可读结果时加 `--json`，或使用公开 MoonBit API 的 `Result`。本例核对失败会退出 1，不会继续报告成功。

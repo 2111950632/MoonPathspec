@@ -52,7 +52,7 @@ literal magic 是整条规则按字面匹配，不是在同一条规则内启用
 | 05 | `两条 glob 规则 *\?report.txt 与 *\*report.txt` | 星号之后的转义仍为字面；同样只选前述两个文件 |
 | 06 | `literal logo[dark].svg + glob *\[draft\].txt + literal exclude skip[draft].txt` | 方括号图标与文档并集，最终排除 skip，共 5 个；不选 logod.svg |
 | 07 | prefix=src，top+glob+attr:publish -generated，附加根 LICENSE 并排除 skip | 选择 [draft].txt、a[draft].txt、keep[draft].txt、LICENSE；b[draft].txt 被 generated=true 阻止 |
-| 08 | `prefix=src，相对 ../docs/*\[draft\].txt + 属性，根 LICENSE 与排除使用 top` | POSIX 规则预期与第 07 例相同；精确非 top 参数仍需 Linux Git 对照 |
+| 08 | `prefix=src，相对 ../docs/*\[draft\].txt + 属性，根 LICENSE 与排除使用 top` | POSIX 规则预期与第 07 例相同；精确非 top 参数已通过 Linux Git 2.43.0 / 2.56.0 对照 |
 | 09 | 未闭合 docs/a[broken 与不存在的 docs/no[ | 有同名候选时保留精确路径回退，选 a[broken；不存在时合法空匹配 |
 | 10 | :(top,glob)docs/f[o][o].txt | 同时选择原字符串同名 f[o][o].txt 与通配命中的 foo.txt，保留 Git 的“路径匹配自身”行为 |
 | 11 | :(top)docs/file[z-a].txt | 实测选原字符串同名 file[z-a].txt 和 filez.txt；不擅自把倒序范围改成语法错误 |
@@ -63,7 +63,7 @@ literal magic 是整条规则按字面匹配，不是在同一条规则内启用
 
 ## Git 独立核验范围
 
-参考固定版本 Git v2.51.0：
+案例概念参考 Git v2.51.0 的固定来源；实际兼容终点与原生对照版本为 Git 2.43.0 / 2.56.0：
 
 - [t6130：glob 与 literal，以及原字符串同名路径](https://github.com/git/git/blob/v2.51.0/t/t6130-pathspec-noglob.sh)
 - [t6137：字面星号、问号与方括号](https://github.com/git/git/blob/v2.51.0/t/t6137-pathspec-wildcards-literal.sh)
@@ -71,7 +71,7 @@ literal magic 是整条规则按字面匹配，不是在同一条规则内启用
 
 本目录固定预期独立研究于 2026-11-25，执行基线是 Git 2.56.0.windows.4。通过临时 Git index 存放候选，使用 git ls-files --full-name -z 查询结果，再恢复到调用者候选顺序。包含 * 和 ? 的文件名只存入 index，不要求 NTFS 工作树创建非法名称；这类 index-only 输入不冒充 Windows 文件系统能力。属性来自实际 git check-attr -z 读取。
 
-第 01–07、09–12 例采用 top magic，在 Windows Git 中保留规则主体原文，已经独立查询 Git 匹配结果；这不等于已经运行了原生 POSIX Git。第 13 例独立查询 Windows Git 非 top 参数。第 08 例目前仅有归一化等价的 top 参照，精确的非 top POSIX 参数待 Linux Git 验证。各例状态记在 expected.json，后续以 CI 实际结果补充，不把研究预期当成实现通过。
+第 01–07、09–12 例采用 top magic，在 Windows Git 中保留规则主体原文，已经独立查询 Git 匹配结果；这不等于已经运行了原生 POSIX Git。第 13 例独立查询 Windows Git 非 top 参数。后续 [0.2.1 原生 Linux CI](https://github.com/2111950632/MoonPathspec/actions/runs/45589748234) 已在 Git 2.43.0 与 2.56.0 对第 01–12 例（包括第 08 例精确非 top 参数）实际对照通过；第 13 例已通过 [Windows CI](https://github.com/2111950632/MoonPathspec/actions/runs/45589748354) 的 Git 2.56.1.windows.1。各例最初研究预期与后续真实执行记录分别保留在 expected.json 和 evidence/github-validation-0.2.1.json。
 
 ## 平台与错误边界
 

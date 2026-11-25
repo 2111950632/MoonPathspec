@@ -141,19 +141,28 @@ stable, terminating callback.
 
 ## Current verification status
 
-The [0.2.0 local record](../evidence/validation-0.2.0.json) passed 74 core
-cases on each JS/Wasm GC backend, 40 Node cases, 13 runnable examples, and 7
-own public-API cases per backend from the actual extracted package. Native
-Windows Git 2.56.0 passed 444 general differential cases and 352 extended
-escape/settings cases. Seven POSIX-only cases were not run there and are not
-counted as passed.
+The [0.2.1 local record](../evidence/validation-0.2.1.json) passed 76 core
+cases on each JS/Wasm GC backend, 42 Node cases, 13 runnable examples, and 9
+own public-API cases per backend from the actual extracted package.
 
-[Mooncakes 0.2.0](../evidence/mooncakes-validation-0.2.0.json) is published. A
-fresh registry consumer passed 7 own API cases on each backend; 7 production
-MoonBit sources and 4 manifests/interface files were identical to the release.
-Native Linux Git 2.43.0/2.56.0 and the online platform matrix remain pending.
-The workflow source is not execution proof. Historical 0.1.x evidence retains its original scope. Implementation
-tests, independent Git runs, package extraction, actual network download and
-organizer review are separate claims. A finite suite is evidence for its
-recorded inputs and versions, not a proof of every possible pathspec. Remaining
-legal-syntax gaps must be fixed, not converted to permanent profile exclusions.
+[Native Linux Git 2.43.0 and 2.56.0 CI](https://github.com/2111950632/MoonPathspec/actions/runs/45589748234)
+passed **444 general + 362 extended cases for each version**. The extended
+report separately lists 6 Windows-only not_run cases, not passed cases. The
+[full Linux/Windows workflow](https://github.com/2111950632/MoonPathspec/actions/runs/45589748354)
+passed check, both backends, build, formatting/interface verification, Node,
+differential cases, package extraction and standalone distribution checks.
+Its Linux Git 2.56.1 passed 444 + 362; Windows Git 2.56.1 passed 444 + 361 and
+separately listed 7 POSIX-only not_run cases. The combined native matrix
+executes all 13 published examples on their applicable platforms. See the
+[compact CI record](../evidence/github-validation-0.2.1.json) and run artifacts.
+
+The first native run exposed C-runtime binary prefixes and version-specific
+minimum signed integers; these were fixed using explicit platform/version
+settings and retained in regressions. The complete public target remains the
+endpoint. A finite suite is evidence for recorded inputs and versions, not a
+proof of every possible pathspec or every Git command.
+
+0.2.1 publication/download is being completed separately. Historical 0.2.0 and
+0.1.x evidence retains its original scope. Package extraction, actual registry
+download and organizer review are distinct claims. Any remaining legal-syntax
+gap must be fixed rather than converted to a permanent profile exclusion.

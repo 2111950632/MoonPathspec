@@ -1,0 +1,909 @@
+{
+  "schema_version": 1,
+  "kind": "local-validation-snapshot",
+  "version": "0.2.1",
+  "client_date": "2026-11-25",
+  "platform": "Windows x86_64",
+  "source_commit": "43002de14eef4fdd8aa620dcc37fe31b2469879d",
+  "verification": {
+    "schema_version": 1,
+    "run_id": "37093f21-354b-40fd-bef0-cac4f1e538ba",
+    "started_at": "2026-11-25T09:51:22.925Z",
+    "updated_at": "2026-11-25T09:52:39.444Z",
+    "client_date": "2026-11-25",
+    "toolchain": "moon 0.1.20261119 (738607b 2026-11-19) ~\\Documents\\Codex\\2026-11-23\\moonbit-november\\toolchain-current\\bin\\moon.exe\nmoonc v0.10.22+124d61d05 (2026-11-19) ~\\Documents\\Codex\\2026-11-23\\moonbit-november\\toolchain-current\\bin\\moonc.exe\nmoonrun 0.1.20261119 (738607b 2026-11-19) ~\\Documents\\Codex\\2026-11-23\\moonbit-november\\toolchain-current\\bin\\moonrun.exe",
+    "steps": [
+      {
+        "step": "scripts/check-release.mjs",
+        "exit_code": 0
+      },
+      {
+        "step": "check --target all --deny-warn",
+        "exit_code": 0
+      },
+      {
+        "step": "test --target js --deny-warn",
+        "exit_code": 0
+      },
+      {
+        "step": "test --target wasm-gc --deny-warn",
+        "exit_code": 0
+      },
+      {
+        "step": "fmt --check",
+        "exit_code": 0
+      },
+      {
+        "step": "info",
+        "exit_code": 0
+      },
+      {
+        "step": "scripts/check-interface.mjs C:\\Users\\Lenovo\\Documents\\Codex\\2026-11-23\\moonbit-november\\MoonPathspec\\evidence\\local\\interface-before.mbti",
+        "exit_code": 0
+      },
+      {
+        "step": "build --target js --release --deny-warn",
+        "exit_code": 0
+      },
+      {
+        "step": "--test tests/integration.mjs tests/host_io.mjs tests/scenarios.mjs tests/pathspec_options.mjs tests/distribution.mjs tests/verification.mjs",
+        "exit_code": 0
+      },
+      {
+        "step": "tests/git_oracle.py --node C:\\Users\\Lenovo\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe --git git",
+        "exit_code": 0
+      },
+      {
+        "step": "tests/escaped_oracle.py --node C:\\Users\\Lenovo\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe --git git",
+        "exit_code": 0
+      },
+      {
+        "step": "examples/escaped-pathspec/run.mjs",
+        "exit_code": 0
+      },
+      {
+        "step": "package",
+        "exit_code": 0
+      },
+      {
+        "step": "scripts/check-consumer.py --moon C:\\Users\\Lenovo\\Documents\\Codex\\2026-11-23\\moonbit-november\\toolchain-current\\bin\\moon.exe",
+        "exit_code": 0
+      },
+      {
+        "step": "scripts/package.mjs",
+        "exit_code": 0
+      },
+      {
+        "step": "scripts/check-dist.mjs",
+        "exit_code": 0
+      }
+    ],
+    "passed": true,
+    "status": "passed"
+  },
+  "tests": {
+    "moonbit_js": {
+      "passed": 76,
+      "failed": 0
+    },
+    "moonbit_wasm_gc": {
+      "passed": 76,
+      "failed": 0
+    },
+    "node": {
+      "passed": 42,
+      "failed": 0
+    },
+    "escaped_examples": {
+      "passed": 13,
+      "failed": 0
+    },
+    "extracted_public_api_consumer": {
+      "own_tests_per_backend": 9,
+      "backends": [
+        "js",
+        "wasm-gc"
+      ],
+      "passed": true
+    }
+  },
+  "source_counts": {
+    "method": "Nonblank lines excluding whole-line // comments; structural syntax included. Tests and host code separate; not organizer-certified effective LOC.",
+    "totals": {
+      "production": {
+        "files": 7,
+        "total": 2149,
+        "nonblank_noncomment": 1935
+      },
+      "tests": {
+        "files": 4,
+        "total": 1501,
+        "nonblank_noncomment": 1321
+      }
+    },
+    "files": {
+      "production": [
+        {
+          "file": "cmd/bridge/main.mbt",
+          "total": 12,
+          "nonblank_noncomment": 7
+        },
+        {
+          "file": "glob.mbt",
+          "total": 427,
+          "nonblank_noncomment": 388
+        },
+        {
+          "file": "model.mbt",
+          "total": 125,
+          "nonblank_noncomment": 98
+        },
+        {
+          "file": "parser.mbt",
+          "total": 419,
+          "nonblank_noncomment": 382
+        },
+        {
+          "file": "protocol.mbt",
+          "total": 529,
+          "nonblank_noncomment": 502
+        },
+        {
+          "file": "public_methods.mbt",
+          "total": 59,
+          "nonblank_noncomment": 20
+        },
+        {
+          "file": "selector.mbt",
+          "total": 578,
+          "nonblank_noncomment": 538
+        }
+      ],
+      "tests": [
+        {
+          "file": "glob_wbtest.mbt",
+          "total": 230,
+          "nonblank_noncomment": 205
+        },
+        {
+          "file": "parser_wbtest.mbt",
+          "total": 319,
+          "nonblank_noncomment": 271
+        },
+        {
+          "file": "protocol_wbtest.mbt",
+          "total": 398,
+          "nonblank_noncomment": 354
+        },
+        {
+          "file": "selector_wbtest.mbt",
+          "total": 554,
+          "nonblank_noncomment": 491
+        }
+      ]
+    }
+  },
+  "production_sha256": {
+    "cmd/bridge/main.mbt": "805f59778d31867160d31294f09ba94ac8943bd9ad2b0713c298914d45950a45",
+    "glob.mbt": "025736b6e2145bc7001b1cb91bf2ed3191836c7ab2ede0f7e91540ea7bdd9410",
+    "model.mbt": "a670dcea0ce50b90b7efe438e941bbb320b99528209dd8cf93be90768ed43910",
+    "parser.mbt": "5ddfa9efe3f66370ec549e8e7b8d3dbdadc2c8c33d298a691dd0e3e927d2f1cd",
+    "protocol.mbt": "2e475268ef9d83518eb0fbc257bbd2d88bd55a7563702a2cd6fe8a95c957c40f",
+    "public_methods.mbt": "3860b5ed0c9051ef43bb1d35b21cc15c7b29793846f821ed507ac26ff2aee0e1",
+    "selector.mbt": "e6d5b4930fbde1dc485488afb53480c02fcd651577d986bb4d2ebf35d6aab703"
+  },
+  "reproduce": "npm run verify",
+  "prior_ci_observations": {
+    "source_commit": "d6bf0c8b3682c804c87d5f26319b297afbf4c55e",
+    "platform_workflow": "https://github.com/2111950632/MoonPathspec/actions/runs/45588204101",
+    "fixed_git_workflow": "https://github.com/2111950632/MoonPathspec/actions/runs/45588204112",
+    "findings": [
+      "Native Linux/glibc Git accepts C23 binary integer prefixes; Windows Git rejects them.",
+      "Git 2.43 rejects -2147483648 and -2g environment integers; Git 2.56 accepts them."
+    ],
+    "fix": "Explicit platform and reference-version settings preserve measured differences. Cases retained and expanded."
+  },
+  "scope": "Actual local run only; not a native Linux run, registry download, or organizer approval. Non-native cases remain not_run.",
+  "git_oracle": {
+    "schema_version": 1,
+    "kind": "independent-git-differential",
+    "status": "passed",
+    "profile": {
+      "name": "UTF-8 Git pathspec selection differential fixture",
+      "oracle": "git ls-files --full-name -z -- <patterns>; staged UTF-8 paths; no commits",
+      "cwd": "prefix names an existing repository directory",
+      "order": "Expected Git set is restored to caller candidate order",
+      "attributes": "Working-tree .gitattributes, read with git check-attr -z for every candidate/name pair; all four states retained",
+      "exclusions": "Not a full Git command compatibility claim. No arbitrary non-UTF-8 names, environment pathspec flags, filesystem traversal, tree-ish attributes, platform-specific case folding, symlinks, submodules or sparse index.",
+      "backslashes": "Every case is compared directly with Git. Each run records its native POSIX or Windows platform and supplies the corresponding explicit core option; ordinary Windows patterns and top magic can normalize backslashes differently."
+    },
+    "git_version": "git version 2.56.0.windows.4",
+    "node_version": "v24.22.3",
+    "git_build_options": [
+      "git version 2.56.0.windows.4",
+      "cpu: x86_64",
+      "built from commit: 581291682ad5a238c08c93d1f5bd4518382a3230",
+      "sizeof-long: 4",
+      "sizeof-size_t: 8",
+      "shell-path: D:/git-sdk-64-build-installers/usr/bin/sh",
+      "rust: disabled",
+      "feature: fsmonitor--daemon",
+      "gettext: enabled",
+      "libcurl: 8.23.0",
+      "OpenSSL: OpenSSL 3.5.9 29 Sep 2026",
+      "zlib: 1.3.2",
+      "SHA-1: SHA1_DC",
+      "SHA-256: SHA256_BLK",
+      "default-ref-format: files",
+      "default-hash: sha1"
+    ],
+    "git_executable": "C:\\Users\\Lenovo\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\git\\cmd\\git.EXE",
+    "platform": "windows",
+    "requested_platform": "auto",
+    "host_platform": "win32",
+    "core_options": {
+      "windows": true
+    },
+    "validation_scope": "Recorded UTF-8 indexed candidate paths, working-tree attributes, and git ls-files pathspec selection on the reported native platform; not all Git commands or arbitrary non-UTF-8 filenames",
+    "seed": 20261123,
+    "fixed_cases": 184,
+    "generated_cases": 260,
+    "batch_size": 128,
+    "total_cases": 444,
+    "candidate_paths": 58,
+    "success_cases": 436,
+    "error_cases": 8,
+    "differential_cases": 444,
+    "differential_passed_cases": 444,
+    "git_syntax_or_prefix_error_cases": 8,
+    "resource_limit_checks": 0,
+    "compared_cases": 444,
+    "passed_cases": 444,
+    "failed_cases": 0,
+    "attribute_pairs": 290,
+    "attribute_state_counts": {
+      "unspecified": 212,
+      "set": 24,
+      "unset": 17,
+      "value": 37
+    },
+    "git_commands": 453,
+    "fixture_sha256": "1fa573ea9d3af39e4812adcb9c97b3a0641565c74292dc5262526909207bec72",
+    "generated_cases_sha256": "df8a8d2a43f578a97fe55209ff46e49f5bc38016e1227cf9443e7122f40ed5c4",
+    "candidate_paths_sha256": "1e9ddc2e2ab22d6e73e068c374e0fca8442a50e8f69ac79028cabb5a68ec1600",
+    "attributes_sha256": "da2cba19a543efeb38d38ee5e8bf352f56f662148241906aa89a078e7f6bf7d7",
+    "oracle_results_sha256": "9e9f82264620be4bb12534757bd66e69fc074a00a31233cbff3fccab1890f93d",
+    "elapsed_seconds": 34.621,
+    "paths": [
+      "README.md",
+      "root.txt",
+      ".hidden",
+      "foo",
+      "x",
+      "src/main.mbt",
+      "src/App.MBT",
+      "src/lib/util.mbt",
+      "src/lib/helper.txt",
+      "src/lib/deep/code.mbt",
+      "src/foo",
+      "docs/guide.md",
+      "docs/a.txt",
+      "docs/ab.txt",
+      "docs/[draft].txt",
+      "docs/nested/page.md",
+      "docs/nested/foo",
+      "docs/UPPER.TXT",
+      "assets/image.png",
+      "assets/icons/tiny.svg",
+      "vendor/keep.txt",
+      "vendor/lib/code.mbt",
+      "space dir/a file.txt",
+      "space dir/nested/file.md",
+      "unicode/猫.txt",
+      "unicode/😀.txt",
+      "unicode/é.txt",
+      "unicode/é.txt",
+      "unicode/x.txt",
+      "unicode/λ.mbt",
+      "a/x",
+      "a/b",
+      "a/xb",
+      "a/z/xb",
+      "a/z/b",
+      "a/z/deep/b",
+      "a/aab",
+      "a/aabz",
+      "a/aa/b",
+      "a/ab",
+      "a/zz/x",
+      "z/x",
+      "z/foo",
+      "case/A",
+      "case/b",
+      "case/z",
+      "case/_",
+      "case/^",
+      "case/`",
+      "case/é",
+      "case/A.txt",
+      "case/b.txt",
+      "case/z.txt",
+      "hidden/.file",
+      "hidden/deep/.file",
+      "dash-name.txt",
+      "case/lower/a",
+      "case/lower-a"
+    ],
+    "attributes": {
+      "README.md": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "root.txt": {
+        "flag": true,
+        "review": false,
+        "kind": "text",
+        "tag": null,
+        "missing": null
+      },
+      ".hidden": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "foo": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "x": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "src/main.mbt": {
+        "flag": null,
+        "review": null,
+        "kind": "source",
+        "tag": "stable",
+        "missing": null
+      },
+      "src/App.MBT": {
+        "flag": null,
+        "review": null,
+        "kind": "source",
+        "tag": "stable",
+        "missing": null
+      },
+      "src/lib/util.mbt": {
+        "flag": false,
+        "review": true,
+        "kind": "library",
+        "tag": "stable",
+        "missing": null
+      },
+      "src/lib/helper.txt": {
+        "flag": true,
+        "review": false,
+        "kind": "source",
+        "tag": "stable",
+        "missing": null
+      },
+      "src/lib/deep/code.mbt": {
+        "flag": null,
+        "review": null,
+        "kind": "source",
+        "tag": "stable",
+        "missing": null
+      },
+      "src/foo": {
+        "flag": null,
+        "review": null,
+        "kind": "source",
+        "tag": "stable",
+        "missing": null
+      },
+      "docs/guide.md": {
+        "flag": null,
+        "review": true,
+        "kind": "doc",
+        "tag": null,
+        "missing": null
+      },
+      "docs/a.txt": {
+        "flag": true,
+        "review": true,
+        "kind": "doc",
+        "tag": null,
+        "missing": null
+      },
+      "docs/ab.txt": {
+        "flag": true,
+        "review": true,
+        "kind": "doc",
+        "tag": null,
+        "missing": null
+      },
+      "docs/[draft].txt": {
+        "flag": true,
+        "review": true,
+        "kind": "doc",
+        "tag": null,
+        "missing": null
+      },
+      "docs/nested/page.md": {
+        "flag": null,
+        "review": true,
+        "kind": "doc",
+        "tag": null,
+        "missing": null
+      },
+      "docs/nested/foo": {
+        "flag": null,
+        "review": true,
+        "kind": "doc",
+        "tag": null,
+        "missing": null
+      },
+      "docs/UPPER.TXT": {
+        "flag": null,
+        "review": true,
+        "kind": "doc",
+        "tag": null,
+        "missing": null
+      },
+      "assets/image.png": {
+        "flag": false,
+        "review": false,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "assets/icons/tiny.svg": {
+        "flag": false,
+        "review": false,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "vendor/keep.txt": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "vendor/lib/code.mbt": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "space dir/a file.txt": {
+        "flag": true,
+        "review": true,
+        "kind": "text",
+        "tag": "space",
+        "missing": null
+      },
+      "space dir/nested/file.md": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "unicode/猫.txt": {
+        "flag": true,
+        "review": false,
+        "kind": "text",
+        "tag": "utf8",
+        "missing": null
+      },
+      "unicode/😀.txt": {
+        "flag": true,
+        "review": false,
+        "kind": "text",
+        "tag": "utf8",
+        "missing": null
+      },
+      "unicode/é.txt": {
+        "flag": true,
+        "review": false,
+        "kind": "text",
+        "tag": "utf8",
+        "missing": null
+      },
+      "unicode/é.txt": {
+        "flag": true,
+        "review": false,
+        "kind": "text",
+        "tag": "utf8",
+        "missing": null
+      },
+      "unicode/x.txt": {
+        "flag": true,
+        "review": false,
+        "kind": "text",
+        "tag": "utf8",
+        "missing": null
+      },
+      "unicode/λ.mbt": {
+        "flag": null,
+        "review": false,
+        "kind": null,
+        "tag": "utf8",
+        "missing": null
+      },
+      "a/x": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "a/b": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "a/xb": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "a/z/xb": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "a/z/b": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "a/z/deep/b": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "a/aab": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "a/aabz": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "a/aa/b": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "a/ab": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "a/zz/x": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "z/x": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "z/foo": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "case/A": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "case/b": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "case/z": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "case/_": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "case/^": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "case/`": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "case/é": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "case/A.txt": {
+        "flag": true,
+        "review": false,
+        "kind": "text",
+        "tag": null,
+        "missing": null
+      },
+      "case/b.txt": {
+        "flag": true,
+        "review": false,
+        "kind": "text",
+        "tag": null,
+        "missing": null
+      },
+      "case/z.txt": {
+        "flag": true,
+        "review": false,
+        "kind": "text",
+        "tag": null,
+        "missing": null
+      },
+      "hidden/.file": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "hidden/deep/.file": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "dash-name.txt": {
+        "flag": true,
+        "review": false,
+        "kind": "text",
+        "tag": null,
+        "missing": null
+      },
+      "case/lower/a": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      },
+      "case/lower-a": {
+        "flag": null,
+        "review": null,
+        "kind": null,
+        "tag": null,
+        "missing": null
+      }
+    },
+    "failures": [],
+    "full_report_sha256": "4509c776b57b29c10eb1917986bf95494dc9291ca253c9c9f70376f376eac09b",
+    "full_report_location": "Generated evidence/local/git-oracle.json; archived by CI as artifact."
+  },
+  "escaped_oracle": {
+    "schema_version": 1,
+    "kind": "independent-escaped-pathspec-git-differential",
+    "run_id": "b618bd16-f13d-4be1-bb7e-01249317f6e0",
+    "started_at": "2026-11-25T09:52:05.058275+00:00",
+    "status": "passed",
+    "passed": true,
+    "seed": 20261125,
+    "generated_cases": 160,
+    "not_run": [
+      {
+        "id": "example-08-prefix-relative-attributes.json",
+        "required_platform": "posix",
+        "reason": "requires actual native posix Git argv"
+      },
+      {
+        "id": "posix-relative-docs",
+        "required_platform": "posix",
+        "reason": "requires actual native posix Git argv"
+      },
+      {
+        "id": "posix-relative-src",
+        "required_platform": "posix",
+        "reason": "requires actual native posix Git argv"
+      },
+      {
+        "id": "posix-relative-src-lib",
+        "required_platform": "posix",
+        "reason": "requires actual native posix Git argv"
+      },
+      {
+        "id": "posix-escaped-backslash",
+        "required_platform": "posix",
+        "reason": "requires actual native posix Git argv"
+      },
+      {
+        "id": "posix-trailing-backslash-identity",
+        "required_platform": "posix",
+        "reason": "requires actual native posix Git argv"
+      },
+      {
+        "id": "posix-star-backslash-identity",
+        "required_platform": "posix",
+        "reason": "requires actual native posix Git argv"
+      }
+    ],
+    "failures": [],
+    "git_version": "git version 2.56.0.windows.4",
+    "node_version": "v24.22.3",
+    "native_platform": "windows",
+    "platform": "windows",
+    "reference_version": "2.56.0",
+    "oracle_command": "git [global pathspec flags] ls-files --full-name -z -- <patterns>",
+    "candidate_source": "index-only update-index -z --index-info",
+    "attribute_source": "actual git check-attr -z for every candidate/name",
+    "platform_boundary": "Windows raw matching uses top magic; native non-top POSIX argv is not_run on Windows",
+    "fixtures": {
+      "examples": {
+        "paths": [
+          "docs/[draft].txt",
+          "docs/draft.txt",
+          "docs/a[draft].txt",
+          "docs/b[draft].txt",
+          "docs/nested/a[draft].txt",
+          "docs/a?report.txt",
+          "docs/abreport.txt",
+          "docs/a*report.txt",
+          "docs/areport.txt",
+          "docs/a[broken",
+          "docs/file[z-a].txt",
+          "docs/filez.txt",
+          "docs/file[!].txt",
+          "docs/file!.txt",
+          "docs/f[o][o].txt",
+          "docs/foo.txt",
+          "docs/skip[draft].txt",
+          "docs/keep[draft].txt",
+          "assets/logo[dark].svg",
+          "assets/logod.svg",
+          "src/item[draft].txt",
+          "src/a[draft].txt",
+          "LICENSE"
+        ],
+        "candidate_paths_sha256": "2960a31b2c51d4619dc455af43b239685030e0c882abfd662fa86ef4f975b017",
+        "attributes_sha256": "dc7c13ba6b85ef9acd144ad2a564425d1839a4e0103ab09018c3ff0a50695de9"
+      },
+      "boundaries": {
+        "paths": [
+          "docs/[draft].txt",
+          "docs/draft.txt",
+          "docs/a[draft].txt",
+          "docs/b[draft].txt",
+          "docs/nested/a[draft].txt",
+          "docs/a?report.txt",
+          "docs/abreport.txt",
+          "docs/a*report.txt",
+          "docs/areport.txt",
+          "docs/a[broken",
+          "docs/file[z-a].txt",
+          "docs/filez.txt",
+          "docs/file[!].txt",
+          "docs/file!.txt",
+          "docs/f[o][o].txt",
+          "docs/foo.txt",
+          "docs/skip[draft].txt",
+          "docs/keep[draft].txt",
+          "assets/logo[dark].svg",
+          "assets/logod.svg",
+          "src/item[draft].txt",
+          "src/a[draft].txt",
+          "LICENSE",
+          "docs/axb.txt",
+          "docs/a[b].txt",
+          "docs/ab.txt",
+          "docs/a].txt",
+          "docs/a[.txt",
+          "docs/[].txt",
+          "docs/].txt",
+          "docs/-a.txt",
+          "docs/filea.txt",
+          "docs/filem.txt",
+          "docs/file-.txt",
+          "docs/file].txt",
+          "docs/a^b.txt",
+          "docs/trail",
+          "docs/nested/z[draft].txt",
+          "docs/empty.txt",
+          "docs/[[:digit:]].txt",
+          "docs/4.txt",
+          "docs/*.txt",
+          "docs/?.txt",
+          "docs/f[.txt",
+          "src/lib/a[draft].txt",
+          "src/lib/foo.txt",
+          "src/lib/f[o][o].txt",
+          "src/lib/a?report.txt",
+          "src/lib/a*report.txt",
+          "docs/UPPER.TXT",
+          "docs/lower.txt",
+          "docs/sub/inner.txt",
+          "docs/comma.txt"
+        ],
+        "candidate_paths_sha256": "857541ad175a04fe12d423ea1c3cc720e38049b6342ad7e7f554a09531f66ee0",
+        "attributes_sha256": "f95d0bb61c44f08614044b1586f7849328aa6d574202169ed62b297233385e39"
+      }
+    },
+    "example_expected_file_sha256": "c9c36732f51075eed5981ddc249587993050b7dac964686a7f7bc45590e6dddb",
+    "generated_inputs_sha256": "2484e18859d55cc7a9a63cf3c920d5423cc2936f3fefd64bf597f60db4c1eb12",
+    "git_commands": 379,
+    "total_cases": 368,
+    "compared_cases": 361,
+    "not_run_cases": 7,
+    "passed_cases": 361,
+    "failed_cases": 0,
+    "git_error_cases": 22,
+    "elapsed_seconds": 29.524,
+    "finished_at": "2026-11-25T09:52:34.582700+00:00",
+    "full_report_sha256": "3fba4ee3028f4c2417e781ef4d714551b25f2b29dadcb55d55fdd6efdf2a1247",
+    "full_report_location": "Generated evidence/local/escaped-oracle.json; archived by CI as artifact."
+  }
+}

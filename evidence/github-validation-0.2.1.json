@@ -1,0 +1,427 @@
+{
+  "schema_version": 1,
+  "kind": "native-git-and-two-platform-ci",
+  "client_date": "2026-11-25",
+  "version": "0.2.1",
+  "source_commit": "43002de14eef4fdd8aa620dcc37fe31b2469879d",
+  "repository": "https://github.com/2111950632/MoonPathspec",
+  "default_branch": "main",
+  "workflows": [
+    {
+      "id": 45589748234,
+      "name": "POSIX Git compatibility",
+      "url": "https://github.com/2111950632/MoonPathspec/actions/runs/45589748234",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 139120477197,
+          "name": "Linux Git 2.56.0",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/2111950632/MoonPathspec/actions/runs/45589748234/job/139120477197",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+              "conclusion": "success"
+            },
+            {
+              "name": "Record host and source versions",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install reference build dependencies",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install official MoonBit toolchain",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build pinned reference Git",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build MoonBit selection core",
+              "conclusion": "success"
+            },
+            {
+              "name": "Compare general pathspec cases with reference Git",
+              "conclusion": "success"
+            },
+            {
+              "name": "Compare escaped and mixed wildcard cases with reference Git",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 139120477741,
+          "name": "Linux Git 2.43.0",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/2111950632/MoonPathspec/actions/runs/45589748234/job/139120477741",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+              "conclusion": "success"
+            },
+            {
+              "name": "Record host and source versions",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install reference build dependencies",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install official MoonBit toolchain",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build pinned reference Git",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build MoonBit selection core",
+              "conclusion": "success"
+            },
+            {
+              "name": "Compare general pathspec cases with reference Git",
+              "conclusion": "success"
+            },
+            {
+              "name": "Compare escaped and mixed wildcard cases with reference Git",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ],
+      "artifacts": [
+        {
+          "id": 15009734534,
+          "name": "posix-git-2.56.0",
+          "size_in_bytes": 282549,
+          "url": "https://github.com/2111950632/MoonPathspec/actions/runs/45589748234/artifacts/15009734534"
+        },
+        {
+          "id": 15009694519,
+          "name": "posix-git-2.43.0",
+          "size_in_bytes": 281441,
+          "url": "https://github.com/2111950632/MoonPathspec/actions/runs/45589748234/artifacts/15009694519"
+        }
+      ]
+    },
+    {
+      "id": 45589748354,
+      "name": "Check MoonPathspec",
+      "url": "https://github.com/2111950632/MoonPathspec/actions/runs/45589748354",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 139120477328,
+          "name": "validate (ubuntu-24.04)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/2111950632/MoonPathspec/actions/runs/45589748354/job/139120477328",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install MoonBit on Linux",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install MoonBit on Windows",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Check, build, test, compare with Git and consume real package",
+              "conclusion": "success"
+            },
+            {
+              "name": "Record source counts",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 139120477831,
+          "name": "validate (windows-latest)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/2111950632/MoonPathspec/actions/runs/45589748354/job/139120477831",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install MoonBit on Linux",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Install MoonBit on Windows",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check, build, test, compare with Git and consume real package",
+              "conclusion": "success"
+            },
+            {
+              "name": "Record source counts",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ],
+      "artifacts": [
+        {
+          "id": 15010367094,
+          "name": "moonpathspec-ubuntu-24.04",
+          "size_in_bytes": 397060,
+          "url": "https://github.com/2111950632/MoonPathspec/actions/runs/45589748354/artifacts/15010367094"
+        },
+        {
+          "id": 15009792876,
+          "name": "moonpathspec-windows-latest",
+          "size_in_bytes": 399352,
+          "url": "https://github.com/2111950632/MoonPathspec/actions/runs/45589748354/artifacts/15009792876"
+        }
+      ]
+    }
+  ],
+  "differential_matrix": [
+    {
+      "job_id": 139120477197,
+      "job_name": "Linux Git 2.56.0",
+      "reference_version": "2.56.0",
+      "general": {
+        "status": "passed",
+        "total_cases": 444,
+        "compared_cases": 444,
+        "passed_cases": 444,
+        "failed_cases": 0,
+        "differential_cases": 444,
+        "differential_passed_cases": 444,
+        "platform": "posix",
+        "git_version": "git version 2.56.0",
+        "fixture_sha256": "38583d8ad0555bf97f80fb46fd8285103f17ed6cfcf8b714a7b0858f44f23413"
+      },
+      "escaped_and_settings": {
+        "status": "passed",
+        "platform": "posix",
+        "total_cases": 368,
+        "compared_cases": 362,
+        "not_run_cases": 6,
+        "passed_cases": 362,
+        "failed_cases": 0,
+        "git_error_cases": 15
+      }
+    },
+    {
+      "job_id": 139120477741,
+      "job_name": "Linux Git 2.43.0",
+      "reference_version": "2.43.0",
+      "general": {
+        "status": "passed",
+        "total_cases": 444,
+        "compared_cases": 444,
+        "passed_cases": 444,
+        "failed_cases": 0,
+        "differential_cases": 444,
+        "differential_passed_cases": 444,
+        "platform": "posix",
+        "git_version": "git version 2.43.0",
+        "fixture_sha256": "38583d8ad0555bf97f80fb46fd8285103f17ed6cfcf8b714a7b0858f44f23413"
+      },
+      "escaped_and_settings": {
+        "status": "passed",
+        "platform": "posix",
+        "total_cases": 368,
+        "compared_cases": 362,
+        "not_run_cases": 6,
+        "passed_cases": 362,
+        "failed_cases": 0,
+        "git_error_cases": 18
+      }
+    },
+    {
+      "job_id": 139120477328,
+      "job_name": "validate (ubuntu-24.04)",
+      "reference_version": "2.56.0",
+      "general": {
+        "status": "passed",
+        "total_cases": 444,
+        "compared_cases": 444,
+        "passed_cases": 444,
+        "failed_cases": 0,
+        "differential_cases": 444,
+        "differential_passed_cases": 444,
+        "platform": "posix",
+        "git_version": "git version 2.56.1",
+        "fixture_sha256": "38583d8ad0555bf97f80fb46fd8285103f17ed6cfcf8b714a7b0858f44f23413"
+      },
+      "escaped_and_settings": {
+        "status": "passed",
+        "platform": "posix",
+        "total_cases": 368,
+        "compared_cases": 362,
+        "not_run_cases": 6,
+        "passed_cases": 362,
+        "failed_cases": 0,
+        "git_error_cases": 15
+      }
+    },
+    {
+      "job_id": 139120477831,
+      "job_name": "validate (windows-latest)",
+      "reference_version": "2.56.0",
+      "general": {
+        "status": "passed",
+        "total_cases": 444,
+        "compared_cases": 444,
+        "passed_cases": 444,
+        "failed_cases": 0,
+        "differential_cases": 444,
+        "differential_passed_cases": 444,
+        "platform": "windows",
+        "git_version": "git version 2.56.1.windows.1",
+        "fixture_sha256": "1fa573ea9d3af39e4812adcb9c97b3a0641565c74292dc5262526909207bec72"
+      },
+      "escaped_and_settings": {
+        "status": "passed",
+        "platform": "windows",
+        "total_cases": 368,
+        "compared_cases": 361,
+        "not_run_cases": 7,
+        "passed_cases": 361,
+        "failed_cases": 0,
+        "git_error_cases": 22
+      }
+    }
+  ],
+  "source_integrity": {
+    "reference_build_script": "scripts/build-reference-git.sh",
+    "pinned_archive_sha256": {
+      "2.43.0": "5446603e73d911781d259e565750dcd277a42836c8e392cac91cf137aa9b76ec",
+      "2.56.0": "26c56c296b38c0695b26fa95f475f1d01704d2d38e73465ca30b0b2f5dc789d3"
+    },
+    "method": "Official kernel.org archive hashes checked against pinned SHA-256 and official HTTPS checksum manifest; builds isolated in runner temporary folders. Not PGP signature verification."
+  },
+  "tests": {
+    "moonbit_core_per_backend": 76,
+    "node": 42,
+    "escaped_examples": 13,
+    "extracted_consumer_own_tests_per_backend": 9,
+    "backends": [
+      "js",
+      "wasm-gc"
+    ],
+    "platforms": [
+      "ubuntu-24.04",
+      "windows-latest"
+    ],
+    "all_passed": true
+  },
+  "scope": "Finite, native-version/platform differential evidence for the recorded UTF-8 candidate/attribute inputs. Platform-only not_run cases are listed separately, never counted as passed. This is not formal proof for all inputs, full Git CLI/filesystem compatibility, registry-download evidence, or organizer approval."
+}
