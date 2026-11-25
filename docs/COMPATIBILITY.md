@@ -131,9 +131,11 @@ Windows Git 2.56.0 passed 444 general differential cases and 352 extended
 escape/settings cases. Seven POSIX-only cases were not run there and are not
 counted as passed.
 
-Native Linux Git 2.43.0 and 2.56.0, the online platform matrix and 0.2.0 registry
-publication/download remain pending. The workflow source is not execution
-proof. Historical 0.1.x evidence retains its original scope. Implementation
+[Mooncakes 0.2.0](../evidence/mooncakes-validation-0.2.0.json) is published. A
+fresh registry consumer passed 7 own API cases on each backend; 7 production
+MoonBit sources and 4 manifests/interface files were identical to the release.
+Native Linux Git 2.43.0/2.56.0 and the online platform matrix remain pending.
+The workflow source is not execution proof. Historical 0.1.x evidence retains its original scope. Implementation
 tests, independent Git runs, package extraction, actual network download and
 organizer review are separate claims. A finite suite is evidence for its
 recorded inputs and versions, not a proof of every possible pathspec. Remaining
