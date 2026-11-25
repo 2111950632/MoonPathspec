@@ -16,17 +16,13 @@ priv struct GlobMatch {
 
 ///|
 priv enum GlobToken {
+  Never
   Literal(Int32)
+  Escaped(Int32)
   Any
   Star(Bool)
   Directories
   Class(FixedArray[UInt32], FixedArray[UInt32], Bool)
-}
-
-///|
-priv enum GlobClassAtom {
-  Single(Int32)
-  Named(String)
 }
 
 ///|
@@ -41,6 +37,7 @@ fn compile_glob(
   pattern : String,
   pathname : Bool,
   state_budget~ : Int32 = 65536,
+  protected_prefix~ : Int32 = 0,
 ) -> Result[GlobProgram, ParseError] {
   let bytes = @utf8.encode(pattern[:])
   if bytes.length() > 65536 {
@@ -59,7 +56,7 @@ fn compile_glob(
     let b = bytes[i].to_int()
     // A class owns two eight-word bitsets, plus its token. Charge before any
     // allocation so a small input cannot expand into an unbounded plan.
-    let cost = if b == 91 { 17 } else { 1 }
+    let cost = if b == 91 && i >= protected_prefix { 17 } else { 1 }
     if cost > state_budget - states {
       return Err(
         glob_error("compile_limit", i, "Compiled pattern state limit exceeded."),
@@ -71,7 +68,12 @@ fn compile_glob(
         glob_error("invalid_nul", i, "NUL is not a valid Git path byte."),
       )
     }
-    if b == 92 {
+    if i < protected_prefix {
+      tokens.push(Literal(b))
+      literals.push(bytes[i])
+      i += 1
+    } else if b == 92 {
+      all_literal = false
       if i + 1 == bytes.length() {
         return Err(
           glob_error(
@@ -85,7 +87,7 @@ fn compile_glob(
           glob_error("invalid_nul", i + 1, "NUL is not a valid Git path byte."),
         )
       }
-      tokens.push(Literal(escaped))
+      tokens.push(Escaped(escaped))
       literals.push(bytes[i + 1])
       i += 2
     } else if b == 42 {
@@ -95,19 +97,18 @@ fn compile_glob(
         i += 1
       }
       let count = i - start
-      if i < bytes.length() && bytes[i].to_int() == 92 {
-        return Err(
-          glob_error(
-            "unsupported_glob_escape", i, "GPP-1 excludes an escape immediately after a wildcard star; native Git path preprocessing differs by platform.",
-          ),
-        )
-      }
       let left_boundary = start == 0 || bytes[start - 1].to_int() == 47
       let right_boundary = i == bytes.length() || bytes[i].to_int() == 47
+      let escaped_slash = i + 1 < bytes.length() &&
+        bytes[i].to_int() == 92 &&
+        bytes[i + 1].to_int() == 47
       // The measured Git 2.56 baseline also treats a whole *** component as
       // recursive, despite the narrower syntax described in gitglossary.
-      if pathname && count >= 2 && left_boundary && right_boundary {
-        if i < bytes.length() {
+      if pathname &&
+        count >= 2 &&
+        left_boundary &&
+        (right_boundary || escaped_slash) {
+        if i < bytes.length() && !escaped_slash {
           tokens.push(Directories)
           i += 1 // **/ includes its following slash, including the zero-dir case.
         } else {
@@ -145,164 +146,108 @@ fn compile_glob(
 }
 
 ///|
-/// Parse a bracket expression. Unterminated classes, unknown POSIX names,
-/// descending ranges, collating symbols and equivalence classes fail explicitly.
+/// Parse the byte class independently into normal and case-folded masks.
+/// The public selector retains invalid wildcard syntax as a non-matching
+/// program after checking the original literal path, following Git.
 fn glob_parse_class(
   bytes : Bytes,
   start : Int32,
 ) -> Result[(GlobToken, Int32), ParseError] {
-  // Two 256-bit sets retain normal/icase differences without allocating
-  // 512 boxed Boolean slots per class in the JavaScript backend.
   let mask = FixedArray::make(8, 0U)
   let case_mask = FixedArray::make(8, 0U)
   let mut i = start + 1
   let mut inverted = false
-  if i < bytes.length() && (bytes[i].to_int() == 33 || bytes[i].to_int() == 94) {
+  if i < bytes.length() && (bytes[i] == b'!' || bytes[i] == b'^') {
     inverted = true
     i += 1
   }
   let mut first = true
+  let mut previous = 0
   while i < bytes.length() {
-    if bytes[i].to_int() == 93 && !first {
+    let value = bytes[i].to_int()
+    if value == 93 && !first {
       return Ok((Class(mask, case_mask, inverted), i + 1))
     }
-    let atom_start = i
-    let (atom, next) = match glob_parse_class_atom(bytes, i) {
-      Ok(result) => result
-      Err(error) => return Err(error)
-    }
-    i = next
     first = false
-    let range_eligible = match atom {
-      Single(_) => true
-      Named(_) => false
-    }
-    if range_eligible &&
+    if value == 92 {
+      if i + 1 >= bytes.length() {
+        return Err(
+          glob_error(
+            "invalid_glob", i, "Unterminated escaped class class_byte.",
+          ),
+        )
+      }
+      let class_byte = bytes[i + 1].to_int()
+      if class_byte == 0 {
+        return Err(glob_error("invalid_nul", i + 1, "NUL is not a path byte."))
+      }
+      glob_class_add(mask, class_byte)
+      glob_class_add(case_mask, class_byte)
+      previous = class_byte
+      i += 2
+    } else if value == 45 &&
+      previous != 0 &&
       i + 1 < bytes.length() &&
-      bytes[i].to_int() == 45 &&
-      bytes[i + 1].to_int() != 93 {
-      let (end_atom, end_next) = match glob_parse_class_atom(bytes, i + 1) {
-        Ok(result) => result
-        Err(error) => return Err(error)
+      bytes[i + 1] != b']' {
+      let mut end = i + 1
+      if bytes[end] == b'\\' {
+        end += 1
       }
-      match (atom, end_atom) {
-        (Single(lo), Single(hi)) => {
-          if lo > hi {
-            return Err(
-              glob_error(
-                "invalid_glob_range", atom_start, "A bracket range must have ascending byte endpoints.",
-              ),
-            )
-          }
-          for value = lo; value <= hi; value = value + 1 {
-            glob_class_add(mask, value)
-            glob_class_add(case_mask, glob_fold(value))
-          }
-        }
-        _ =>
+      if end >= bytes.length() {
+        return Err(
+          glob_error("invalid_glob", i, "Unterminated range endpoint."),
+        )
+      }
+      let hi = bytes[end].to_int()
+      for class_byte = previous; class_byte <= hi; class_byte = class_byte + 1 {
+        glob_class_add(mask, class_byte)
+        glob_class_add(case_mask, glob_fold(class_byte))
+      }
+      previous = 0
+      i = end + 1
+    } else if value == 91 && i + 1 < bytes.length() && bytes[i + 1] == b':' {
+      let mut end = i + 2
+      while end < bytes.length() && bytes[end] != b']' {
+        end += 1
+      }
+      if end == bytes.length() {
+        return Err(glob_error("invalid_glob", i, "Unterminated POSIX class."))
+      }
+      if end > i + 2 && bytes[end - 1] == b':' {
+        let name = @utf8.decode_lossy(bytes[i + 2:end - 1])
+        if ![
+            "alnum", "alpha", "blank", "cntrl", "digit", "graph", "lower", "print",
+            "punct", "space", "upper", "xdigit",
+          ].contains(name) {
           return Err(
-            glob_error(
-              "invalid_glob_range", i, "A POSIX class cannot be a range endpoint.",
-            ),
+            glob_error("unsupported_posix_class", i, "Unknown POSIX class."),
           )
-      }
-      i = end_next
-    } else {
-      match atom {
-        Single(value) => {
-          glob_class_add(mask, value)
-          // Git folds input bytes, but not singleton bracket members.
-          // Therefore [A] under icase intentionally differs from [A-Z].
-          glob_class_add(case_mask, value)
         }
-        Named(name) =>
-          for value = 0; value < 256; value = value + 1 {
-            if glob_posix_member(name, value) {
-              glob_class_add(mask, value)
-              glob_class_add(case_mask, glob_fold(value))
-            }
+        for class_byte = 0; class_byte < 256; class_byte = class_byte + 1 {
+          if glob_posix_member(name, class_byte) {
+            glob_class_add(mask, class_byte)
+            glob_class_add(case_mask, glob_fold(class_byte))
           }
+        }
+        previous = 0
+        i = end + 1
+      } else {
+        glob_class_add(mask, value)
+        glob_class_add(case_mask, value)
+        previous = value
+        i += 1
       }
+    } else {
+      if value == 0 {
+        return Err(glob_error("invalid_nul", i, "NUL is not a path byte."))
+      }
+      glob_class_add(mask, value)
+      glob_class_add(case_mask, value)
+      previous = value
+      i += 1
     }
   }
   Err(glob_error("invalid_glob", start, "Unterminated bracket expression."))
-}
-
-///|
-fn glob_parse_class_atom(
-  bytes : Bytes,
-  start : Int32,
-) -> Result[(GlobClassAtom, Int32), ParseError] {
-  let byte = bytes[start].to_int()
-  if byte == 0 {
-    return Err(
-      glob_error("invalid_nul", start, "NUL is not a valid Git path byte."),
-    )
-  }
-  if byte == 92 {
-    if start + 1 >= bytes.length() {
-      return Err(
-        glob_error(
-          "invalid_glob", start, "A trailing backslash has no byte to escape.",
-        ),
-      )
-    }
-    if bytes[start + 1].to_int() == 0 {
-      return Err(
-        glob_error(
-          "invalid_nul",
-          start + 1,
-          "NUL is not a valid Git path byte.",
-        ),
-      )
-    }
-    return Ok((Single(bytes[start + 1].to_int()), start + 2))
-  }
-  if byte == 91 && start + 1 < bytes.length() {
-    let marker = bytes[start + 1].to_int()
-    if marker == 46 || marker == 61 {
-      return Err(
-        glob_error(
-          "unsupported_glob_class", start, "Collating symbols and equivalence classes are unsupported.",
-        ),
-      )
-    }
-    if marker == 58 {
-      let mut end = start + 2
-      while end + 1 < bytes.length() {
-        if bytes[end].to_int() == 58 && bytes[end + 1].to_int() == 93 {
-          let name = @utf8.decode_lossy(bytes[start + 2:end])
-          match name {
-            "alnum"
-            | "alpha"
-            | "blank"
-            | "cntrl"
-            | "digit"
-            | "graph"
-            | "lower"
-            | "print"
-            | "punct"
-            | "space"
-            | "upper"
-            | "xdigit" => return Ok((Named(name), end + 2))
-            _ =>
-              return Err(
-                glob_error(
-                  "unsupported_posix_class",
-                  start,
-                  "Unknown POSIX byte class: " + name,
-                ),
-              )
-          }
-        }
-        end += 1
-      }
-      return Err(
-        glob_error("invalid_glob", start, "Unterminated POSIX byte class."),
-      )
-    }
-  }
-  Ok((Single(byte), start + 1))
 }
 
 ///|
@@ -424,6 +369,14 @@ fn run_glob(
       }
       steps += 1
       match token {
+        Never => ()
+        Escaped(expected) =>
+          if j < length && row[j] {
+            let actual = bytes[j].to_int()
+            if (if icase { glob_fold(actual) } else { actual }) == expected {
+              next[j + 1] = true
+            }
+          }
         Literal(expected) =>
           if j < length && row[j] {
             let actual = bytes[j].to_int()

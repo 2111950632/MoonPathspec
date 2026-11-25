@@ -7,11 +7,13 @@ import {
 }
 
 // Values
-pub fn compile(Array[String], prefix? : String, limits? : Limits) -> Result[Plan, SelectionError]
+pub fn compile(Array[String], prefix? : String, limits? : Limits, options? : PathspecOptions) -> Result[Plan, SelectionError]
 
 pub fn decision_json(Decision) -> @json.Json
 
 pub fn default_limits() -> Limits
+
+pub fn default_pathspec_options() -> PathspecOptions
 
 pub fn dispatch(String) -> String
 
@@ -105,10 +107,23 @@ pub(all) struct ParsedPattern {
   pattern : String
   magic : MagicFlags
   no_pathspec : Bool
+  prefix_length : Int32?
 }
 pub fn ParsedPattern::equal(Self, Self) -> Bool
 pub fn ParsedPattern::not_equal(Self, Self) -> Bool
 pub fn ParsedPattern::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct PathspecOptions {
+  literal : Bool
+  glob : Bool
+  noglob : Bool
+  icase : Bool
+  windows : Bool
+}
+pub fn PathspecOptions::equal(Self, Self) -> Bool
+pub fn PathspecOptions::not_equal(Self, Self) -> Bool
+pub fn PathspecOptions::to_repr(Self) -> @debug.Repr
 
 pub struct Plan {
   // private fields

@@ -28,6 +28,86 @@ fn protocol_error(source : String, code : String) -> Json raise {
 }
 
 ///|
+test "protocol global pathspec options expose merged state and prefix magic" {
+  let result = protocol_result(
+    "{\"command\":\"inspect\",\"patterns\":[\":(prefix:4,icase)src/A\"],\"options\":{\"glob\":true},\"environment\":{\"GIT_ICASE_PATHSPECS\":\"yes\"}}",
+  )
+  assert_eq(protocol_field(result, "exit_code"), Json(0))
+  let options = protocol_field(result, "options")
+  assert_eq(protocol_field(options, "glob"), Json(true))
+  assert_eq(protocol_field(options, "icase"), Json(true))
+  assert_eq(protocol_field(options, "windows"), Json(false))
+  match protocol_field(result, "patterns") {
+    Array(items) =>
+      assert_eq(protocol_field(items[0], "prefix_length"), Json(4))
+    _ => abort("expected inspected patterns")
+  }
+}
+
+///|
+test "protocol options and environment reject unknown keys and wrong types" {
+  for
+    extra in [
+      "\"options\":null", "\"options\":[]", "\"options\":{\"glob\":1}", "\"options\":{\"typo\":false}",
+      "\"environment\":[]", "\"environment\":{\"GIT_GLOB_PATHSPECS\":true}", "\"environment\":{\"OTHER\":\"1\"}",
+      "\"environment\":{\"GIT_GLOB_PATHSPECS\":\"maybe\"}",
+    ] {
+    ignore(
+      protocol_error(
+        "{\"patterns\":[],\"paths\":[]," + extra + "}",
+        "invalid_request",
+      ),
+    )
+  }
+  ignore(
+    protocol_error(
+      "{\"patterns\":[],\"paths\":[],\"options\":{\"glob\":true,\"noglob\":true}}",
+      "conflicting_options",
+    ),
+  )
+}
+
+///|
+test "Git environment Boolean spellings include bounded base-zero integers" {
+  // Independently measured against Git 2.56.0.windows.4's pathspec settings.
+  for value in ["", "FALSE", "no", "Off", "0", "-0", "0x0", "00", "0k"] {
+    assert_eq(ps_environment_bool(value), Ok(false))
+  }
+  for
+    value in [
+      "TRUE", "yes", "On", "1", "2", "-1", "0x10", "010", "1M", "-2g", "2147483647",
+      "-2147483648", " 1",
+    ] {
+    assert_eq(ps_environment_bool(value), Ok(true))
+  }
+  for
+    value in [
+      "maybe", " true", "true ", "1 ", "08", "0x", "0b1", "1kb", "2g", "2147483648",
+      "-2147483649", " ",
+    ] {
+    assert_true(ps_environment_bool(value) is Err(_))
+  }
+}
+
+///|
+test "explicit options override raw environment values before Boolean parsing" {
+  let options = ps_pathspec_options(
+    Some({ "glob": Json(false), "literal": Json(true) }),
+    Some({
+      "GIT_GLOB_PATHSPECS": Json("invalid"),
+      "GIT_ICASE_PATHSPECS": Json("0"),
+    }),
+  ).unwrap()
+  assert_true(options.literal)
+  assert_false(options.glob)
+  assert_false(options.icase)
+  let result = protocol_result(
+    "{\"patterns\":[\"*.txt\"],\"paths\":[\"a.txt\",\"sub/b.txt\"],\"options\":{\"glob\":false},\"environment\":{\"GIT_GLOB_PATHSPECS\":\"yes\"}}",
+  )
+  assert_eq(protocol_field(result, "selected"), Json(["a.txt", "sub/b.txt"]))
+}
+
+///|
 test "protocol default select produces a versioned complete response" {
   let result = protocol_result(
     "{\"patterns\":[\"src\",\":!src/tmp\"],\"paths\":[\"README\",\"src/a\",\"src/tmp/b\"]}",

@@ -42,6 +42,25 @@ pub(all) struct ParsedPattern {
   pattern : String
   magic : MagicFlags
   no_pathspec : Bool
+  prefix_length : Int32?
+}
+
+///|
+/// Explicit equivalents of Git's global pathspec settings. The library does not
+/// read process environment variables. `windows` selects path preprocessing in
+/// the caller-facing compiler; magic grammar itself is platform-independent.
+#derive(Eq, @debug.Debug)
+pub(all) struct PathspecOptions {
+  literal : Bool
+  glob : Bool
+  noglob : Bool
+  icase : Bool
+  windows : Bool
+}
+
+///|
+pub fn default_pathspec_options() -> PathspecOptions {
+  { literal: false, glob: false, noglob: false, icase: false, windows: false, }
 }
 
 ///|

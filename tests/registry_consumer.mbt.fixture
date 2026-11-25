@@ -126,3 +126,48 @@ test "registry public errors budgets and JSON bridge fail without partial data" 
     Json("match_budget_exceeded"),
   )
 }
+
+///|
+test "registry public escaped wildcards combine literal fallback and exclusion" {
+  let paths = [
+    "docs/a[draft].txt", "docs/b[draft].txt", "docs/nested/a[draft].txt",
+    "docs/ad.txt", "docs/a*report.txt", "docs/abreport.txt",
+  ]
+  let plan = @moonpathspec.compile([
+    ":(top,glob)docs/*\\[draft\\].txt", ":(top)docs/a\\*report.txt",
+    ":(top,exclude)docs/b\\[draft\\].txt",
+  ]).unwrap()
+  assert_eq(@moonpathspec.select(plan, paths).unwrap().selected, [
+    "docs/a[draft].txt", "docs/a*report.txt",
+  ])
+  let reason = @moonpathspec.explain(plan, "docs/b[draft].txt").unwrap()
+  assert_eq(reason.included_by, [0])
+  assert_eq(reason.excluded_by, [2])
+  let malformed = @moonpathspec.compile(["a[broken"]).unwrap()
+  assert_eq(
+    @moonpathspec.select(malformed, ["a[broken", "abroken"]).unwrap().selected,
+    ["a[broken"],
+  )
+}
+
+///|
+test "registry public global settings and protected prefix are available" {
+  let options = { ..@moonpathspec.default_pathspec_options(), glob: true, }
+  let plan = @moonpathspec.compile(["*.txt"], options~).unwrap()
+  assert_eq(
+    @moonpathspec.select(plan, ["a.txt", "sub/b.txt"]).unwrap().selected,
+    ["a.txt"],
+  )
+  let plan = @moonpathspec.compile([":(prefix:4,icase)src/A*"]).unwrap()
+  assert_eq(
+    @moonpathspec.select(plan, ["src/abc", "SRC/abc"]).unwrap().selected,
+    ["src/abc"],
+  )
+  let posix = @moonpathspec.compile(["a\\*"]).unwrap()
+  let windows = @moonpathspec.compile(["a\\*"], options={
+    ..@moonpathspec.default_pathspec_options(), windows: true,
+  }).unwrap()
+  let paths = ["a*", "a/file", "abc"]
+  assert_eq(@moonpathspec.select(posix, paths).unwrap().selected, ["a*"])
+  assert_eq(@moonpathspec.select(windows, paths).unwrap().selected, ["a/file"])
+}

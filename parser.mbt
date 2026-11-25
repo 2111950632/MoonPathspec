@@ -22,7 +22,110 @@ fn parser_name_byte(byte : Byte) -> Bool {
 
 ///|
 fn parser_value_byte(byte : Byte) -> Bool {
-  parser_alnum(byte) || byte == b'_' || byte == b'-'
+  parser_alnum(byte) || byte == b'_' || byte == b'-' || byte == b','
+}
+
+///|
+fn parser_options_error(options : PathspecOptions) -> ParseError? {
+  if options.glob && options.noglob {
+    return Some(
+      parser_error(
+        "conflicting_options", 0, "global glob and noglob settings are incompatible",
+      ),
+    )
+  }
+  if options.literal && (options.glob || options.icase) {
+    return Some(
+      parser_error(
+        "conflicting_options", 0, "global literal is incompatible with global glob or icase",
+      ),
+    )
+  }
+  None
+}
+
+///|
+// Git's long-magic scanner skips escaped commas and closing parentheses before
+// the attribute-value grammar unescapes and validates the contents separately.
+fn parser_magic_end(bytes : Bytes, start : Int32) -> Int32 {
+  let mut cursor = start
+  while cursor < bytes.length() {
+    let byte = bytes[cursor]
+    if byte == b'\\' && cursor + 1 < bytes.length() {
+      cursor += 2
+    } else if byte == b',' || byte == b')' {
+      break
+    } else {
+      cursor += 1
+    }
+  }
+  cursor
+}
+
+///|
+// Match Git's signed decimal strtol grammar without signed overflow. Negative
+// values disable the explicit-prefix override. An empty value means zero.
+fn parser_prefix_length(
+  bytes : Bytes,
+  start : Int32,
+  end : Int32,
+) -> Result[Int32?, ParseError] {
+  if start == end {
+    return Ok(Some(0))
+  }
+  let mut cursor = start
+  while cursor < end &&
+        (bytes[cursor] == b' ' || (bytes[cursor] >= 9 && bytes[cursor] <= 13)) {
+    cursor += 1
+  }
+  let mut negative = false
+  if cursor < end && (bytes[cursor] == b'-' || bytes[cursor] == b'+') {
+    negative = bytes[cursor] == b'-'
+    cursor += 1
+  }
+  let digit_start = cursor
+  let limit = if negative { -2147483648 } else { -2147483647 }
+  let mut accumulated = 0
+  while cursor < end {
+    let byte = bytes[cursor]
+    if byte < b'0' || byte > b'9' {
+      return Err(
+        parser_error(
+          "invalid_prefix_magic", cursor, "prefix requires a signed decimal integer",
+        ),
+      )
+    }
+    let digit = byte.to_int() - 48
+    if accumulated < limit / 10 {
+      return Err(
+        parser_error(
+          "invalid_prefix_magic", cursor, "prefix exceeds the safe Int32 range",
+        ),
+      )
+    }
+    accumulated *= 10
+    if accumulated < limit + digit {
+      return Err(
+        parser_error(
+          "invalid_prefix_magic", cursor, "prefix exceeds the safe Int32 range",
+        ),
+      )
+    }
+    accumulated -= digit
+    cursor += 1
+  }
+  if cursor == digit_start {
+    return Err(
+      parser_error(
+        "invalid_prefix_magic", start, "prefix requires a signed decimal integer",
+      ),
+    )
+  }
+  if negative && accumulated != 0 {
+    Ok(None)
+  } else {
+    Ok(Some(-accumulated))
+  }
 }
 
 ///|
@@ -168,6 +271,17 @@ fn parser_attributes(
 ///
 /// Specification: https://git-scm.com/docs/gitglossary#def_pathspec
 pub fn parse_pattern(source : String) -> Result[ParsedPattern, ParseError] {
+  parse_pattern_options(source, default_pathspec_options())
+}
+
+///|
+fn parse_pattern_options(
+  source : String,
+  options : PathspecOptions,
+) -> Result[ParsedPattern, ParseError] {
+  if parser_options_error(options) is Some(error) {
+    return Err(error)
+  }
   let bytes = @utf8.encode(source)
   let length = bytes.length()
   if length == 0 {
@@ -184,14 +298,15 @@ pub fn parse_pattern(source : String) -> Result[ParsedPattern, ParseError] {
   let mut icase = false
   let mut exclude = false
   let mut attributes : Array[AttributeCondition] = []
+  let mut prefix_length : Int32? = None
   let mut body_start = 0
-  let no_pathspec = length == 1 && bytes[0] == b':'
-  if bytes[0] == b':' {
+  let no_pathspec = !options.literal && length == 1 && bytes[0] == b':'
+  if bytes[0] == b':' && !options.literal {
     body_start = 1
     if length > 1 && bytes[1] == b'(' {
-      let mut closing = 2
+      let mut closing = parser_magic_end(bytes, 2)
       while closing < length && bytes[closing] != b')' {
-        closing = closing + 1
+        closing = parser_magic_end(bytes, closing + 1)
       }
       if closing == length {
         return Err(
@@ -201,10 +316,7 @@ pub fn parse_pattern(source : String) -> Result[ParsedPattern, ParseError] {
       let mut token_start = 2
       let mut seen_attr = false
       while token_start < closing {
-        let mut token_end = token_start
-        while token_end < closing && bytes[token_end] != b',' {
-          token_end = token_end + 1
-        }
+        let token_end = parser_magic_end(bytes, token_start)
         let word = parser_text(bytes, token_start, token_end)
         match word {
           "" => ()
@@ -233,7 +345,12 @@ pub fn parse_pattern(source : String) -> Result[ParsedPattern, ParseError] {
           "exclude" => exclude = true
           "attr" => ()
           _ =>
-            if word.has_prefix("attr:") {
+            if word.has_prefix("prefix:") {
+              match parser_prefix_length(bytes, token_start + 7, token_end) {
+                Ok(value) => prefix_length = value
+                Err(error) => return Err(error)
+              }
+            } else if word.has_prefix("attr:") {
               if seen_attr {
                 return Err(
                   parser_error(
@@ -281,10 +398,15 @@ pub fn parse_pattern(source : String) -> Result[ParsedPattern, ParseError] {
       }
     }
   }
+  let local_literal = literal
+  literal = literal || options.literal || (options.noglob && !glob)
+  glob = glob || (options.glob && !local_literal)
+  icase = icase || options.icase
   Ok({
     original: source,
     pattern: parser_text(bytes, body_start, length),
     magic: { top, literal, glob, icase, exclude, attributes, },
     no_pathspec,
+    prefix_length,
   })
 }

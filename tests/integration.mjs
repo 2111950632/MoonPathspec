@@ -83,8 +83,8 @@ test('batch runner bridges multiple requests independently', () => {
   const r=spawnSync(process.execPath,['scripts/request.mjs'],{cwd:root,input:JSON.stringify({batch:[{patterns:['a'],paths:['a','b']},{patterns:['b'],paths:['a','b']}]}),encoding:'utf8'});
   assert.equal(r.status,0); assert.deepEqual(JSON.parse(r.stdout).results.map(x=>x.selected),[['a'],['b']]);
 });
-test('nonliteral backslash returns an explicit profile error', () => {
-  const r=invoke({patterns:['a\\*'],paths:['a*']}); assert.equal(r.exit_code,2); assert.equal(r.error.code,'unsupported_backslash');
+test('escaped star selects a literal special character', () => {
+  const r=invoke({patterns:['a\\*'],paths:['a*','abc']}); assert.equal(r.exit_code,0); assert.deepEqual(r.selected,['a*']);
 });
 test('invalid duplicate paths and invalid limits fail', () => {
   assert.equal(invoke({patterns:[],paths:['a','a']}).error.code,'duplicate_path');

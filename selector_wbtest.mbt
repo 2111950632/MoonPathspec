@@ -318,12 +318,19 @@ test "top patterns preserve dot segments while relative patterns normalize" {
 }
 
 ///|
-test "nonliteral backslashes fail visibly while literal backslashes match" {
-  for pattern in ["a\\b", ":(glob)a\\b", ":(icase)a\\b"] {
-    let error = selector_compile_error([pattern])
-    assert_eq(error.code, "unsupported_backslash")
-    assert_eq(error.pattern_index, Some(0))
-  }
+test "POSIX escapes and explicit Windows preprocessing remain distinct" {
+  let paths = ["a*", "ab", "a/file"]
+  assert_eq(selector_result(selector_plan(["a\\*"]), paths).selected, ["a*"])
+  let windows = compile(["a\\*"], options={
+    ..default_pathspec_options(),
+    windows: true,
+  }).unwrap()
+  assert_eq(selector_result(windows, paths).selected, ["a/file"])
+  let rooted = compile([":(top)a\\*"], options={
+    ..default_pathspec_options(),
+    windows: true,
+  }).unwrap()
+  assert_eq(selector_result(rooted, paths).selected, ["a*"])
   assert_eq(
     selector_result(selector_plan([":(literal)a\\b"]), ["a\\b", "ab"]).selected,
     ["a\\b"],
@@ -331,22 +338,27 @@ test "nonliteral backslashes fail visibly while literal backslashes match" {
 }
 
 ///|
-test "glob compilation offsets refer to the original pattern source" {
-  let error = selector_compile_error([":(glob)文/["])
-  assert_eq(error.code, "invalid_glob")
-  assert_eq(error.offset, Some(11))
-  let normalized = selector_compile_error([":(glob)./x/../文/["])
-  assert_eq(normalized.code, "invalid_glob")
-  assert_eq(normalized.offset, Some(18))
+test "malformed wildcard expressions preserve raw literal path selection" {
+  let paths = ["文/[", "文/a"]
+  assert_eq(selector_result(selector_plan([":(glob)文/["]), paths).selected, [
+    "文/[",
+  ])
+  assert_eq(
+    selector_result(selector_plan([":(glob)./x/../文/["]), paths).selected,
+    ["文/["],
+  )
+  assert_eq(
+    selector_result(selector_plan([":(glob)missing["]), paths).selected,
+    [],
+  )
 }
 
 ///|
-test "candidate validation is complete and identifies the failing path" {
+test "candidate validation retains canonical path and duplicate checks" {
   let plan = selector_plan(["wanted"])
   for
     bad in [
-      "", "/absolute", "a/", "a//b", "./a", "a/./b", "a/../b", "nul\u{0000}x", "C:/outside.txt",
-      "c:relative.txt", "\\rooted", "\\\\server\\file",
+      "", "/absolute", "a/", "a//b", "./a", "a/./b", "a/../b", "nul\u{0000}x",
     ] {
     let error = selector_select_error(plan, ["wanted", bad])
     assert_eq(error.code, "invalid_path")
@@ -355,19 +367,32 @@ test "candidate validation is complete and identifies the failing path" {
   let duplicate = selector_select_error(plan, ["wanted", "unused", "wanted"])
   assert_eq(duplicate.code, "duplicate_path")
   assert_eq(duplicate.path_index, Some(2))
+  assert_eq(
+    selector_result(selector_plan([":(literal)C:name"]), ["C:name"]).selected,
+    ["C:name"],
+  )
 }
 
 ///|
-test "host-rooted prefixes and pattern bodies are rejected on every backend" {
+test "root-relative API rejects host-rooted Windows inputs without reinterpreting POSIX names" {
+  let options = { ..default_pathspec_options(), windows: true, }
   for value in ["/root", "C:/root", "d:relative", "\\root", "\\\\server\\file"] {
-    assert_eq(selector_compile_error([], prefix=value).code, "invalid_prefix")
-    for magic in ["", ":(top)", ":(literal)"] {
-      assert_eq(
-        selector_compile_error([magic + value]).code,
-        "outside_repository",
-      )
+    match compile([], prefix=value, options~) {
+      Err(error) => assert_eq(error.code, "invalid_prefix")
+      Ok(_) => fail("host prefix accepted")
     }
+    match compile([value], options~) {
+      Err(error) => assert_eq(error.code, "outside_repository")
+      Ok(_) => fail("host pattern accepted")
+    }
+    let plan = compile([], options~).unwrap()
+    assert_eq(selector_select_error(plan, [value]).code, "invalid_path")
   }
+  assert_eq(selector_compile_error(["/root"]).code, "outside_repository")
+  assert_eq(
+    selector_result(selector_plan([":(top)/root"]), ["root"]).selected,
+    [],
+  )
 }
 
 ///|

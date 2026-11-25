@@ -46,7 +46,8 @@ def main():
     (consumer / 'consumer_test.mbt').write_text(fixture.read_text(encoding='utf8'), encoding='utf8')
     for target in ['js', 'wasm-gc']:
         subprocess.run([args.moon, 'test', '--target', target, '--deny-warn'], cwd=consumer, check=True, timeout=180)
-    print('Real packaged public-API consumer passed on JS and Wasm GC (5 own tests per target).')
+    count = len(re.findall(r'^test ', fixture.read_text(encoding='utf8'), re.M))
+    print(f'Real packaged public-API consumer passed on JS and Wasm GC ({count} own tests per target).')
 
 if __name__ == '__main__':
     main()

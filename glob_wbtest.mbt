@@ -106,15 +106,16 @@ test "glob: POSIX byte classes, inversion, literal brackets and escapes" {
 }
 
 ///|
-test "glob: literal text is decoded after escapes" {
-  match compile_glob("目录/\\[x\\]", true) {
-    Ok(program) => assert_eq(program.literal_text, Some("目录/[x]"))
-    Err(_) => fail("literal should compile")
-  }
-  match compile_glob("a*", true) {
-    Ok(program) => assert_eq(program.literal_text, None)
-    Err(_) => fail("wildcard should compile")
-  }
+test "glob: escaped text remains a wildcard program rather than a literal directory" {
+  assert_eq(compile_glob("目录/\\[x\\]", true).unwrap().literal_text, None)
+  assert_true(glob_test_match("目录/\\[x\\]", "目录/[x]", true, false))
+  assert_false(
+    glob_test_match("目录/\\[x\\]", "目录/[x]/child", true, false),
+  )
+  assert_eq(
+    compile_glob("目录/x", true).unwrap().literal_text,
+    Some("目录/x"),
+  )
 }
 
 ///|
@@ -132,23 +133,22 @@ test "glob: non-component double stars remain ordinary pathname stars" {
 }
 
 ///|
-test "glob: explicit syntax errors carry UTF8 byte offsets" {
-  match compile_glob("é*\\a", true) {
-    Err(error) => {
-      assert_eq(error.code, "unsupported_glob_escape")
-      assert_eq(error.offset, 3)
-    }
-    Ok(_) => fail("profile exclusion must not silently use intuitive semantics")
-  }
+test "glob: escapes after stars and byte-class compatibility" {
+  assert_true(glob_test_match("é*\\a", "éba", true, false))
+  assert_true(glob_test_match("[z-a]", "z", true, false))
+  assert_false(glob_test_match("[z-a]", "a", true, false))
+  assert_true(glob_test_match("[[.a.]]", "a]", true, false))
+  assert_true(glob_test_match("[[=a=]]", "a]", true, false))
+  assert_false(glob_test_match("\\A", "A", true, true))
+  assert_true(glob_test_match("\\a", "A", true, true))
+  assert_true(glob_test_match("a/**\\/b", "a/x/y/b", true, false))
+  assert_false(glob_test_match("a/**\\/b", "a/b", true, false))
   match compile_glob("é[abc", true) {
     Err(error) => assert_eq(error.offset, 2)
-    Ok(_) => fail("unterminated class accepted")
+    Ok(_) => fail("unterminated class accepted by internal compiler")
   }
-  for pattern in ["[z-a]", "[[:unknown:]]", "[[.a.]]", "[[=a=]]", "a\\"] {
-    match compile_glob(pattern, true) {
-      Err(_) => ()
-      Ok(_) => fail("unsupported syntax accepted")
-    }
+  for pattern in ["[[:unknown:]]", "a\\"] {
+    assert_true(compile_glob(pattern, true) is Err(_))
   }
 }
 

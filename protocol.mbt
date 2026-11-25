@@ -75,6 +75,138 @@ fn ps_limits(value : Json?) -> Result[Limits, String] {
 }
 
 ///|
+// Git v2.56 parse.c accepts case-insensitive boolean words, the empty string,
+// or an Int32 parsed with base 0 and an optional k/m/g (1024) suffix.
+fn ps_environment_bool(text : String) -> Result[Bool, String] {
+  match ps_ascii_fold(text) {
+    "" | "false" | "no" | "off" => return Ok(false)
+    "true" | "yes" | "on" => return Ok(true)
+    _ => ()
+  }
+  let bytes = @utf8.encode(text)
+  let mut end = bytes.length()
+  let mut power = 0
+  if end > 0 {
+    match bytes[end - 1] {
+      b'k' | b'K' => power = 1
+      b'm' | b'M' => power = 2
+      b'g' | b'G' => power = 3
+      _ => ()
+    }
+    if power != 0 {
+      end -= 1
+    }
+  }
+  let mut cursor = 0
+  while cursor < end &&
+        (bytes[cursor] == b' ' || (bytes[cursor] >= 9 && bytes[cursor] <= 13)) {
+    cursor += 1
+  }
+  let mut negative = false
+  if cursor < end && (bytes[cursor] == b'+' || bytes[cursor] == b'-') {
+    negative = bytes[cursor] == b'-'
+    cursor += 1
+  }
+  let mut base = 10
+  if cursor < end && bytes[cursor] == b'0' {
+    base = 8
+    if cursor + 1 < end &&
+      (bytes[cursor + 1] == b'x' || bytes[cursor + 1] == b'X') {
+      base = 16
+      cursor += 2
+    }
+  }
+  let digit_start = cursor
+  let limit = if negative { -2147483648 } else { -2147483647 }
+  let mut value = 0
+  while cursor < end {
+    let byte = bytes[cursor]
+    let digit = if byte >= b'0' && byte <= b'9' {
+      byte.to_int() - 48
+    } else if byte >= b'a' && byte <= b'f' {
+      byte.to_int() - 87
+    } else if byte >= b'A' && byte <= b'F' {
+      byte.to_int() - 55
+    } else {
+      return Err("invalid Git boolean environment value")
+    }
+    if digit >= base || value < limit / base {
+      return Err("invalid or overflowing Git boolean environment integer")
+    }
+    value *= base
+    if value < limit + digit {
+      return Err("overflowing Git boolean environment integer")
+    }
+    value -= digit
+    cursor += 1
+  }
+  if digit_start == end {
+    return Err("invalid Git boolean environment value")
+  }
+  for _ in 0..<power {
+    if value < limit / 1024 {
+      return Err("overflowing Git boolean environment integer")
+    }
+    value *= 1024
+  }
+  Ok(value != 0)
+}
+
+///|
+fn ps_pathspec_options(
+  value : Json?,
+  environment : Json?,
+) -> Result[PathspecOptions, String] {
+  let fields = match value {
+    None => Map([])
+    Some(Object(fields)) => fields
+    _ => return Err("options must be an object")
+  }
+  let combined : Map[String, Bool] = Map([])
+  for name, raw in fields {
+    if !["literal", "glob", "noglob", "icase", "windows"].contains(name) {
+      return Err("unknown pathspec option: " + name)
+    }
+    match raw {
+      True => combined.set(name, true)
+      False => combined.set(name, false)
+      _ => return Err("pathspec options require Boolean values")
+    }
+  }
+  let variables = match environment {
+    None => Map([])
+    Some(Object(fields)) => fields
+    _ => return Err("environment must be an object")
+  }
+  for name, raw in variables {
+    let option = match name {
+      "GIT_LITERAL_PATHSPECS" => "literal"
+      "GIT_GLOB_PATHSPECS" => "glob"
+      "GIT_NOGLOB_PATHSPECS" => "noglob"
+      "GIT_ICASE_PATHSPECS" => "icase"
+      _ => return Err("unknown pathspec environment variable: " + name)
+    }
+    let text = match raw {
+      String(text) => text
+      _ => return Err("pathspec environment values must be raw strings")
+    }
+    if !combined.contains(option) {
+      match ps_environment_bool(text) {
+        Ok(value) => combined.set(option, value)
+        Err(message) => return Err(name + ": " + message)
+      }
+    }
+  }
+  Ok({
+    literal: combined.get("literal").unwrap_or(false),
+    glob: combined.get("glob").unwrap_or(false),
+    noglob: combined.get("noglob").unwrap_or(false),
+    icase: combined.get("icase").unwrap_or(false),
+    windows: combined.get("windows").unwrap_or(false),
+  })
+}
+
+///|
 fn ps_read_attributes(
   value : Json?,
 ) -> Result[Map[String, Map[String, AttributeValue]], String] {
@@ -168,9 +300,10 @@ fn ps_request(request : Json, work_ceiling~ : Int32 = 200000000) -> Json {
     _ => return bad("request must be an object")
   }
   for name, _ in fields {
-    if !["patterns", "paths", "prefix", "attributes", "limits", "command"].contains(
-        name,
-      ) {
+    if ![
+        "patterns", "paths", "prefix", "attributes", "limits", "command", "options",
+        "environment",
+      ].contains(name) {
       return bad("unknown request field: " + name)
     }
   }
@@ -195,6 +328,14 @@ fn ps_request(request : Json, work_ceiling~ : Int32 = 200000000) -> Json {
     Ok(v) => v
     Err(message) => return bad(message)
   }
+  let options = match
+    ps_pathspec_options(
+      ps_field(request, "options"),
+      ps_field(request, "environment"),
+    ) {
+    Ok(value) => value
+    Err(message) => return bad(message)
+  }
   let limits = if configured.max_total_steps > work_ceiling {
     {
       max_patterns: configured.max_patterns,
@@ -207,7 +348,7 @@ fn ps_request(request : Json, work_ceiling~ : Int32 = 200000000) -> Json {
   } else {
     configured
   }
-  let plan = match compile(patterns, prefix~, limits~) {
+  let plan = match compile(patterns, prefix~, limits~, options~) {
     Ok(v) => v
     Err(error) => return ps_error_json(error)
   }
@@ -216,6 +357,13 @@ fn ps_request(request : Json, work_ceiling~ : Int32 = 200000000) -> Json {
       "schema_version": Json(1),
       "exit_code": Json(0),
       "prefix": Json(plan.prefix),
+      "options": {
+        "literal": Json(options.literal),
+        "glob": Json(options.glob),
+        "noglob": Json(options.noglob),
+        "icase": Json(options.icase),
+        "windows": Json(options.windows),
+      },
       "patterns": Json(
         plan.clauses.map(clause => {
           "original": Json(clause.source.original),
@@ -226,6 +374,10 @@ fn ps_request(request : Json, work_ceiling~ : Int32 = 200000000) -> Json {
           "glob": Json(clause.source.magic.glob),
           "icase": Json(clause.source.magic.icase),
           "exclude": Json(clause.source.magic.exclude),
+          "prefix_length": match clause.source.prefix_length {
+            Some(value) => Json(value)
+            None => Json::null()
+          },
           "attribute_conditions": Json(clause.source.magic.attributes.length()),
         }),
       ),

@@ -176,7 +176,7 @@ test "malformed magic fails explicitly" {
   parser_expect_error("", "empty_pattern", 0)
   parser_expect_error(":(top", "unclosed_magic", 1)
   parser_expect_error(":(top,unknown)x", "unknown_magic", 6)
-  parser_expect_error(":(prefix:2)x", "unknown_magic", 2)
+  parser_expect_error(":(prefix:2x)x", "invalid_prefix_magic", 10)
   parser_expect_error(":(TOP)x", "unknown_magic", 2)
   parser_expect_error(":(top, icase)x", "unknown_magic", 6)
   parser_expect_error(":(literal,glob)x", "conflicting_magic", 10)
@@ -209,7 +209,106 @@ test "malformed attribute requirements do not become ordinary patterns" {
   for value in ["x.y", "x/y", "x:y", "x+y", "x@y", "x=y", "x*y"] {
     parser_expect_error(":(attr:a=" + value + ")x", "invalid_attribute", 10)
   }
-  parser_expect_error(":(attr:a=x\\)x", "invalid_attribute", 10)
+  parser_expect_error(":(attr:a=x\\)x", "unclosed_magic", 1)
+}
+
+///|
+test "long magic delimiter scanning preserves escaped attribute commas" {
+  // Git 2.56.0.windows.4: mark=one,two from check-attr is selected by this
+  // escaped value; an escaped ')' passes scanning but fails value validation.
+  let parsed = parser_expect_ok(":(top,attr:mark=one\\,two,icase)a")
+  assert_eq(parsed.pattern, "a")
+  assert_true(parsed.magic.top)
+  assert_true(parsed.magic.icase)
+  assert_eq(parsed.magic.attributes, [Equals("mark", "one,two")])
+  parser_expect_error(":(attr:mark=one\\)two)a", "invalid_attribute", 16)
+  parser_expect_error(":(attr:mark=one,two)a", "unknown_magic", 16)
+}
+
+///|
+test "prefix magic retains Git signed decimal syntax and last value" {
+  // Independently checked with Git 2.56.0.windows.4. A prefix larger than the
+  // body is parsed here but safely rejected by the compiler, not a Git BUG.
+  for
+    source in [
+      ":(prefix:0)a", ":(prefix:)a", ":(prefix:+0)a", ":(prefix: 0)a", ":(prefix:-0)a",
+    ] {
+    assert_eq(parser_expect_ok(source).prefix_length, Some(0))
+  }
+  assert_eq(parser_expect_ok(":(prefix:-1)a").prefix_length, None)
+  assert_eq(parser_expect_ok(":(prefix:1)a").prefix_length, Some(1))
+  assert_eq(parser_expect_ok(":(prefix:0,prefix:1)a").prefix_length, Some(1))
+  assert_eq(parser_expect_ok(":(prefix:1,prefix:-1)a").prefix_length, None)
+  assert_eq(parser_expect_ok(":(prefix:4,icase)文/a").pattern, "文/a")
+  parser_expect_error(":(prefix:+)a", "invalid_prefix_magic", 9)
+  parser_expect_error(":(prefix:0 )a", "invalid_prefix_magic", 10)
+  parser_expect_error(":(prefix:2147483648)a", "invalid_prefix_magic", 18)
+  parser_expect_error(":(prefix:-2147483649)a", "invalid_prefix_magic", 19)
+}
+
+///|
+fn parser_with_options(
+  source : String,
+  options : PathspecOptions,
+) -> ParsedPattern {
+  match parse_pattern_options(source, options) {
+    Ok(value) => value
+    Err(error) => abort("unexpected options parse error: \{error.code}")
+  }
+}
+
+///|
+test "global literal ignores magic while noglob retains per-pattern local_modes" {
+  let literal = { ..default_pathspec_options(), literal: true, }
+  let source = ":(unknown)*[1]"
+  let parsed = parser_with_options(source, literal)
+  assert_eq(parsed.pattern, source)
+  assert_true(parsed.magic.literal)
+  assert_false(parsed.magic.top)
+  assert_eq(parsed.magic.attributes, [])
+  assert_eq(parsed.prefix_length, None)
+  let colon = parser_with_options(":", literal)
+  assert_eq(colon.pattern, ":")
+  assert_false(colon.no_pathspec)
+  let noglob = { ..default_pathspec_options(), noglob: true, }
+  assert_true(parser_with_options("a*", noglob).magic.literal)
+  let local_mode = parser_with_options(":(top,glob)a*", noglob)
+  assert_true(local_mode.magic.top)
+  assert_true(local_mode.magic.glob)
+  assert_false(local_mode.magic.literal)
+  let allowed = parser_with_options("a", { ..literal, noglob: true, })
+  assert_true(allowed.magic.literal)
+}
+
+///|
+test "global glob and icase merge with explicit literal local_mode" {
+  let options = { ..default_pathspec_options(), glob: true, icase: true, }
+  let plain = parser_with_options("a*", options)
+  assert_true(plain.magic.glob)
+  assert_true(plain.magic.icase)
+  assert_false(plain.magic.literal)
+  let local_mode = parser_with_options(":(literal)a*", options)
+  assert_true(local_mode.magic.literal)
+  assert_true(local_mode.magic.icase)
+  assert_false(local_mode.magic.glob)
+  let windows = parser_with_options("a\\*", { ..options, windows: true, })
+  assert_eq(windows.pattern, "a\\*")
+}
+
+///|
+test "global option conflicts match Git instead of silently changing precedence" {
+  for
+    options in [
+      { ..default_pathspec_options(), glob: true, noglob: true, },
+      { ..default_pathspec_options(), literal: true, glob: true, },
+      { ..default_pathspec_options(), literal: true, icase: true, },
+    ] {
+    assert_true(parser_options_error(options) is Some(_))
+    match parse_pattern_options("a", options) {
+      Err(error) => assert_eq(error.code, "conflicting_options")
+      Ok(_) => abort("expected conflicting global options")
+    }
+  }
 }
 
 ///|

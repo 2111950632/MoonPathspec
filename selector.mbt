@@ -3,6 +3,8 @@ struct CompiledClause {
   index : Int32
   source : ParsedPattern
   anchor : String
+  body : String
+  protected_prefix : Int32
   program : GlobProgram
 }
 
@@ -13,6 +15,7 @@ pub struct Plan {
   priv prefix : String
   priv limits : Limits
   priv has_positive : Bool
+  priv options : PathspecOptions
 }
 
 ///|
@@ -59,7 +62,7 @@ fn ps_valid_limits(limits : Limits) -> Bool {
 
 ///|
 fn ps_normalize_prefix(prefix : String) -> Result[String, String] {
-  if ps_host_rooted(prefix) || prefix.contains("\u{0000}") {
+  if prefix.has_prefix("/") || prefix.contains("\u{0000}") {
     return Err("prefix must be a repository-relative path without NUL")
   }
   let out : Array[String] = []
@@ -85,7 +88,7 @@ fn ps_resolve(
   prefix : String,
   body : String,
 ) -> Result[(String, String, Array[Int32]), String] {
-  if ps_host_rooted(body) {
+  if body.has_prefix("/") {
     return Err("absolute patterns are outside the relative-path profile")
   }
   let parts : Array[String] = if prefix == "" { [] } else { ps_parts(prefix) }
@@ -136,7 +139,11 @@ pub fn compile(
   patterns : Array[String],
   prefix~ : String = "",
   limits~ : Limits = default_limits(),
+  options~ : PathspecOptions = default_pathspec_options(),
 ) -> Result[Plan, SelectionError] {
+  if parser_options_error(options) is Some(error) {
+    return Err(selection_error(error.code, error.message))
+  }
   if !ps_valid_limits(limits) {
     return Err(
       selection_error(
@@ -149,6 +156,16 @@ pub fn compile(
   }
   if @utf8.encode(prefix).length() > limits.max_path_bytes {
     return Err(selection_error("prefix_limit", "prefix is too long"))
+  }
+  if options.windows && ps_host_rooted(prefix) {
+    return Err(
+      selection_error("invalid_prefix", "prefix must be repository relative"),
+    )
+  }
+  let prefix = if options.windows {
+    prefix.split("\\").map(s => s.to_owned()).to_array().join("/")
+  } else {
+    prefix
   }
   let prefix = match ps_normalize_prefix(prefix) {
     Ok(value) => value
@@ -170,7 +187,7 @@ pub fn compile(
       })
     }
     total_bytes += size
-    let parsed = match parse_pattern(text) {
+    let parsed = match parse_pattern_options(text, options) {
       Ok(value) => value
       Err(error) =>
         return Err({
@@ -181,7 +198,10 @@ pub fn compile(
           offset: Some(error.offset),
         })
     }
-    if ps_host_rooted(parsed.pattern) {
+    if options.windows &&
+      !parsed.magic.top &&
+      parsed.prefix_length is None &&
+      ps_host_rooted(parsed.pattern) {
       return Err({
         code: "outside_repository",
         message: "rooted and drive-qualified patterns are outside the relative-path profile",
@@ -190,24 +210,31 @@ pub fn compile(
         offset: None,
       })
     }
-    if !parsed.magic.literal && parsed.pattern.contains("\\") {
-      return Err({
-        code: "unsupported_backslash",
-        message: "GPP-1 requires forward-slash patterns; use literal magic for literal metacharacters",
-        pattern_index: Some(index),
-        path_index: None,
-        offset: None,
-      })
+    let protected_prefix = parsed.prefix_length.unwrap_or(0)
+    if parsed.prefix_length is Some(_) &&
+      (prefix != "" || protected_prefix > @utf8.encode(parsed.pattern).length()) {
+      return Err(
+        selection_error(
+          "invalid_prefix_magic", "prefix:N requires root context and a byte count within the pattern",
+        ),
+      )
     }
-    let resolved = if parsed.magic.top {
+    let source_body = if options.windows &&
+      !parsed.magic.top &&
+      parsed.prefix_length is None {
+      parsed.pattern.split("\\").map(s => s.to_owned()).to_array().join("/")
+    } else {
+      parsed.pattern
+    }
+    let resolved = if parsed.magic.top || parsed.prefix_length is Some(_) {
       let offsets : Array[Int32] = []
-      let size = @utf8.encode(parsed.pattern).length()
+      let size = @utf8.encode(source_body).length()
       for i = 0; i <= size; i = i + 1 {
         offsets.push(i)
       }
-      Ok(("", parsed.pattern, offsets))
+      Ok(("", source_body, offsets))
     } else {
-      ps_resolve(prefix, parsed.pattern)
+      ps_resolve(prefix, source_body)
     }
     let (anchor, body, offsets) = match resolved {
       Ok(value) => value
@@ -220,64 +247,63 @@ pub fn compile(
           offset: None,
         })
     }
-    let compiled_offsets : Array[Int32] = []
-    let glob_text = if parsed.magic.literal {
-      let mut escaped = ""
-      let mut byte_cursor = 0
-      for c in body.to_array() {
-        if c == '*' || c == '?' || c == '[' || c == '\\' {
-          escaped += "\\"
-          compiled_offsets.push(offsets[byte_cursor])
-        }
-        escaped += c.to_string()
-        let width = @utf8.encode(c.to_string()).length()
-        for j = 0; j < width; j = j + 1 {
-          compiled_offsets.push(offsets[byte_cursor + j])
-        }
-        byte_cursor += width
-      }
-      compiled_offsets.push(offsets[byte_cursor])
-      escaped
-    } else {
-      for offset in offsets {
-        compiled_offsets.push(offset)
-      }
-      body
-    }
     let program = match
       compile_glob(
-        glob_text,
+        body,
         parsed.magic.glob,
         state_budget=65536 - compiled_states,
+        protected_prefix=if parsed.magic.literal {
+          @utf8.encode(body).length()
+        } else {
+          protected_prefix
+        },
       ) {
       Ok(value) => value
-      Err(error) => {
-        let position = if error.offset >= 0 &&
-          error.offset < compiled_offsets.length() {
-          compiled_offsets[error.offset]
+      Err(error) =>
+        if [
+            "invalid_glob", "invalid_glob_range", "unsupported_posix_class", "unsupported_glob_class",
+          ].contains(error.code) {
+          // Git accepts the argument. Its raw literal path may still match;
+          // a malformed wildcard expression itself matches no additional path.
+          {
+            tokens: [Never],
+            pathname: parsed.magic.glob,
+            literal_text: None,
+            states: 1,
+          }
         } else {
-          @utf8.encode(parsed.pattern).length()
+          let position = if error.offset >= 0 && error.offset < offsets.length() {
+            offsets[error.offset]
+          } else {
+            @utf8.encode(parsed.pattern).length()
+          }
+          return Err({
+            code: error.code,
+            message: error.message,
+            pattern_index: Some(index),
+            path_index: None,
+            offset: Some(
+              @utf8.encode(parsed.original).length() -
+              @utf8.encode(parsed.pattern).length() +
+              position,
+            ),
+          })
         }
-        return Err({
-          code: error.code,
-          message: error.message,
-          pattern_index: Some(index),
-          path_index: None,
-          offset: Some(
-            @utf8.encode(parsed.original).length() -
-            @utf8.encode(parsed.pattern).length() +
-            position,
-          ),
-        })
-      }
     }
     compiled_states += program.states
     if !parsed.magic.exclude {
       has_positive = true
     }
-    clauses.push({ index, source: parsed, anchor, program, })
+    clauses.push({
+      index,
+      source: parsed,
+      anchor,
+      body,
+      protected_prefix,
+      program,
+    })
   }
-  Ok({ clauses, prefix, limits, has_positive, })
+  Ok({ clauses, prefix, limits, has_positive, options, })
 }
 
 ///|
@@ -323,7 +349,7 @@ fn ps_attributes(
 ///|
 fn ps_canonical_path(path : String) -> Bool {
   if path == "" ||
-    ps_host_rooted(path) ||
+    path.has_prefix("/") ||
     path.has_suffix("/") ||
     path.contains("\u{0000}") {
     return false
@@ -352,7 +378,8 @@ pub fn select(
   let paths = paths[:].to_owned()
   let seen : Map[String, Bool] = Map([])
   for index, path in paths {
-    if !ps_canonical_path(path) {
+    if !ps_canonical_path(path) ||
+      (plan.options.windows && ps_host_rooted(path)) {
       return Err({
         code: "invalid_path",
         message: "candidate paths must be canonical repository-relative file paths",
@@ -410,53 +437,74 @@ pub fn select(
       } else {
         path[clause.anchor.length() + 1:].to_owned()
       }
-      let matched = match clause.program.literal_text {
-        Some(literal) => {
-          steps += @utf8.encode(relative).length() +
-            @utf8.encode(literal).length()
-          let relative = if clause.source.magic.icase {
-            ps_ascii_fold(relative)
-          } else {
-            relative
-          }
-          let literal = if clause.source.magic.icase {
-            ps_ascii_fold(literal)
-          } else {
-            literal
-          }
-          if literal.has_suffix("/") {
-            relative.has_prefix(literal)
-          } else {
-            ps_under(relative, literal)
+      let path_bytes = @utf8.encode(relative)
+      let body_bytes = @utf8.encode(clause.body)
+      steps += path_bytes.length() +
+        body_bytes.length() +
+        clause.protected_prefix
+      if total + steps > plan.limits.max_total_steps {
+        return Err({
+          code: "work_limit",
+          message: "selection work budget exhausted",
+          path_index: Some(path_index),
+          pattern_index: Some(pattern_index),
+          offset: None,
+        })
+      }
+      let mut prefix_matches = path_bytes.length() >= clause.protected_prefix
+      if prefix_matches {
+        for i = 0; i < clause.protected_prefix; i = i + 1 {
+          if path_bytes[i] != body_bytes[i] {
+            prefix_matches = false
+            break
           }
         }
-        None => {
-          let remaining = plan.limits.max_total_steps - total - steps
-          let budget = if remaining < plan.limits.max_match_steps {
-            remaining
-          } else {
-            plan.limits.max_match_steps
+      }
+      // Literal comparison precedes wildmatch even when the pattern contains
+      // metacharacters. This also preserves exact malformed-pattern filenames.
+      let raw_path = if clause.source.magic.icase {
+        ps_ascii_fold(relative)
+      } else {
+        relative
+      }
+      let raw_body = if clause.source.magic.icase {
+        ps_ascii_fold(clause.body)
+      } else {
+        clause.body
+      }
+      let raw_match = if raw_body.has_suffix("/") {
+        raw_path.has_prefix(raw_body)
+      } else {
+        ps_under(raw_path, raw_body)
+      }
+      let matched = if !prefix_matches {
+        false
+      } else if raw_match {
+        true
+      } else if clause.source.magic.literal ||
+        clause.program.literal_text is Some(_) {
+        false
+      } else {
+        let remaining = plan.limits.max_total_steps - total - steps
+        let budget = if remaining < plan.limits.max_match_steps {
+          remaining
+        } else {
+          plan.limits.max_match_steps
+        }
+        match
+          run_glob(clause.program, relative, clause.source.magic.icase, budget) {
+          Ok(value) => {
+            steps += value.steps
+            value.matched
           }
-          match
-            run_glob(
-              clause.program,
-              relative,
-              clause.source.magic.icase,
-              budget,
-            ) {
-            Ok(value) => {
-              steps += value.steps
-              value.matched
-            }
-            Err(error) =>
-              return Err({
-                code: error.code,
-                message: error.message,
-                pattern_index: Some(pattern_index),
-                path_index: Some(path_index),
-                offset: Some(error.offset),
-              })
-          }
+          Err(error) =>
+            return Err({
+              code: error.code,
+              message: error.message,
+              pattern_index: Some(pattern_index),
+              path_index: Some(path_index),
+              offset: Some(error.offset),
+            })
         }
       }
       if matched {

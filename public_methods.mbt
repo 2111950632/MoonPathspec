@@ -29,6 +29,12 @@ pub extend ParsedPattern with Eq::{equal, not_equal}
 pub extend ParsedPattern with @debug.Debug::{to_repr}
 
 ///|
+pub extend PathspecOptions with Eq::{equal, not_equal}
+
+///|
+pub extend PathspecOptions with @debug.Debug::{to_repr}
+
+///|
 pub extend Limits with Eq::{equal, not_equal}
 
 ///|
