@@ -1,0 +1,30 @@
+{
+  "patterns": [
+    ":(top)docs/*\\[draft\\].txt"
+  ],
+  "paths": [
+    "docs/[draft].txt",
+    "docs/draft.txt",
+    "docs/a[draft].txt",
+    "docs/b[draft].txt",
+    "docs/nested/a[draft].txt",
+    "docs/a?report.txt",
+    "docs/abreport.txt",
+    "docs/a*report.txt",
+    "docs/areport.txt",
+    "docs/a[broken",
+    "docs/file[z-a].txt",
+    "docs/filez.txt",
+    "docs/file[!].txt",
+    "docs/file!.txt",
+    "docs/f[o][o].txt",
+    "docs/foo.txt",
+    "docs/skip[draft].txt",
+    "docs/keep[draft].txt",
+    "assets/logo[dark].svg",
+    "assets/logod.svg",
+    "src/item[draft].txt",
+    "src/a[draft].txt",
+    "LICENSE"
+  ]
+}

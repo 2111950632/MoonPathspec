@@ -4,6 +4,8 @@
 Requires Python 3.9+, Git, and (unless --oracle-only) Node. No third-party packages.
 The expected selection always comes from git ls-files, never the implementation.
 The fixture's attributes are read back with git check-attr for EVERY candidate.
+The selected platform controls the core's explicit Windows path normalization.
+Reports cover this indexed UTF-8 fixture, not every Git command or filename type.
 """
 
 from __future__ import annotations
@@ -103,9 +105,10 @@ class GitOracle:
             raise RuntimeError(result.stderr.decode("utf-8", errors="replace"))
         return result
 
-    def request(self, case):
+    def request(self, case, platform):
         return {"patterns": case["patterns"], "paths": self.paths,
-                "prefix": case.get("prefix", ""), "attributes": self.attributes}
+                "prefix": case.get("prefix", ""), "attributes": self.attributes,
+                "options": {"windows": platform == "windows"}}
 
     def expected(self, case):
         result = self.execute(["ls-files", "--full-name", "-z", "--", *case["patterns"]],
@@ -141,7 +144,6 @@ def generated_cases(fixture, seed, count):
     for number in range(count):
         prefix = rng.choice(prefixes)
         patterns = []
-        profile_rejection = None
         for index in range(rng.randint(1, 4)):
             body = rng.choice(bodies)
             magic = rng.choice(magics)
@@ -150,14 +152,19 @@ def generated_cases(fixture, seed, count):
                 body = "../" * len(prefix.split("/")) + body
             if index > 0 and rng.randrange(2) == 0 or index == 0 and rng.randrange(8) == 0:
                 magic = "exclude" + ("," + magic if magic else "")
-            if "\\" in body and "literal" not in magic.split(","):
-                profile_rejection = "unsupported_backslash"
             patterns.append(":(" + magic + ")" + body if magic else body)
         case = {"id": "generated-%04d" % number, "category": "seeded-mixture",
                 "prefix": prefix, "patterns": patterns}
-        if profile_rejection:
-            case["expected_profile_rejection"] = profile_rejection
         yield case
+
+
+def reference_platform(requested, git_version):
+    """Do not label native Windows Git results as POSIX reference evidence."""
+    detected = "windows" if os.name == "nt" or ".windows." in git_version.lower() else "posix"
+    if requested != "auto" and requested != detected:
+        raise ValueError("--platform %s conflicts with the native %s Git reference; "
+                         "run the requested platform's Git on that platform" % (requested, detected))
+    return detected
 
 
 def check_response(actual, expected, paths):
@@ -193,6 +200,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--git", default=shutil.which("git"), help="Git executable")
     parser.add_argument("--node", default=shutil.which("node"), help="Node executable")
+    parser.add_argument("--platform", choices=["auto", "posix", "windows"], default="auto",
+                        help="Native reference platform; auto detects host/Windows Git version")
     parser.add_argument("--runner", type=Path, default=ROOT / "scripts" / "request.mjs")
     parser.add_argument("--fixture", type=Path, default=ROOT / "tests" / "oracle_cases.json")
     parser.add_argument("--output", type=Path, default=ROOT / "evidence" / "local" / "git-oracle.json")
@@ -211,13 +220,20 @@ def main():
     fixture_bytes = args.fixture.read_bytes()
     fixture = json.loads(fixture_bytes.decode("utf-8"))
     cases = fixture["cases"] + list(generated_cases(fixture, args.seed, args.generated))
+    if any("expected_profile_rejection" in case for case in cases):
+        raise RuntimeError("Profile rejection markers are obsolete: every case must compare with Git")
     if len(set(case["id"] for case in cases)) != len(cases):
         raise RuntimeError("Duplicate oracle case ids")
     with tempfile.TemporaryDirectory(prefix="moonpathspec-oracle-") as directory:
         oracle = GitOracle(args.git, directory, fixture)
-        expected = [oracle.expected(case) for case in cases]
-        requests = [oracle.request(case) for case in cases]
         git_version = oracle.checked(["--version"]).stdout.decode("utf-8").strip()
+        try:
+            platform = reference_platform(args.platform, git_version)
+        except ValueError as error:
+            parser.error(str(error))
+        git_build_options = oracle.checked(["version", "--build-options"]).stdout.decode("utf-8").splitlines()
+        expected = [oracle.expected(case) for case in cases]
+        requests = [oracle.request(case, platform) for case in cases]
         actual = None
         runner_error = None
         node_version = None
@@ -250,34 +266,20 @@ def main():
         records = []
         failures = []
         differential_passes = 0
-        rejection_passes = 0
         for index, (case, answer) in enumerate(zip(cases, expected)):
             record = {"id": case["id"], "category": case.get("category", "fixed"),
                       "prefix": case.get("prefix", ""), "patterns": case["patterns"], "expected": answer}
-            rejection = case.get("expected_profile_rejection")
-            record["check_kind"] = "profile-rejection" if rejection else "git-error" if answer["exit_code"] else "git-selection"
-            if rejection:
-                if answer["exit_code"] != 0:
-                    raise RuntimeError("A profile rejection case must preserve a successful Git result")
-                record["expected_profile_rejection"] = rejection
+            record["check_kind"] = "git-error" if answer["exit_code"] else "git-selection"
             if actual is not None:
-                compared_expected = {"exit_code": 2, "selected": []} if rejection else answer
-                issues = check_response(actual[index], compared_expected, fixture["paths"])
-                if rejection:
-                    returned_error = actual[index].get("error") if isinstance(actual[index], dict) else None
-                    if not isinstance(returned_error, dict) or returned_error.get("code") != rejection:
-                        issues.append("expected explicit profile rejection code " + rejection)
+                issues = check_response(actual[index], answer, fixture["paths"])
                 record.update({"passed": not issues, "actual": actual[index]})
                 if not issues:
-                    if rejection:
-                        rejection_passes += 1
-                    else:
-                        differential_passes += 1
+                    differential_passes += 1
                 if issues:
                     record["issues"] = issues
                     # A complete failing request is retained, including all four-state attributes.
                     failures.append({"id": case["id"], "request": requests[index],
-                                     "expected": answer, "expected_profile_rejection": rejection,
+                                     "expected": answer,
                                      "actual": actual[index], "issues": issues})
             records.append(record)
         states = collections.Counter("set" if value is True else "unset" if value is False else
@@ -286,15 +288,20 @@ def main():
         report = {"schema_version": 1, "kind": "independent-git-differential",
                   "status": "oracle-only" if args.oracle_only else "failed" if runner_error or failures else "passed",
                   "profile": fixture["profile"], "git_version": git_version, "node_version": node_version,
+                  "git_build_options": git_build_options,
+                  "git_executable": shutil.which(args.git) or args.git,
+                  "platform": platform, "requested_platform": args.platform, "host_platform": sys.platform,
+                  "core_options": {"windows": platform == "windows"},
+                  "validation_scope": "Recorded UTF-8 indexed candidate paths, working-tree attributes, "
+                                      "and git ls-files pathspec selection on the reported native platform; "
+                                      "not all Git commands or arbitrary non-UTF-8 filenames",
                   "seed": args.seed, "fixed_cases": len(fixture["cases"]), "generated_cases": args.generated,
                   "batch_size": args.batch_size,
                   "total_cases": len(cases), "candidate_paths": len(fixture["paths"]),
                   "success_cases": sum(answer["exit_code"] == 0 for answer in expected),
                   "error_cases": sum(answer["exit_code"] == 2 for answer in expected),
-                  "differential_cases": sum(not case.get("expected_profile_rejection") for case in cases),
+                  "differential_cases": len(cases),
                   "differential_passed_cases": differential_passes,
-                  "profile_rejection_cases": sum(bool(case.get("expected_profile_rejection")) for case in cases),
-                  "profile_rejection_passed_cases": rejection_passes,
                   "git_syntax_or_prefix_error_cases": sum(answer["exit_code"] == 2 for answer in expected),
                   "resource_limit_checks": 0,
                   "compared_cases": len(cases) if actual is not None else 0,
@@ -312,8 +319,8 @@ def main():
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({key: report[key] for key in ["status", "total_cases", "compared_cases", "passed_cases", "failed_cases",
-                                                 "differential_cases", "differential_passed_cases", "profile_rejection_cases",
-                                                 "profile_rejection_passed_cases", "fixture_sha256"]}))
+                                                 "differential_cases", "differential_passed_cases", "platform",
+                                                 "git_version", "fixture_sha256"]}))
     print(str(args.output.resolve()))
     if failures:
         for failure in failures[:12]:

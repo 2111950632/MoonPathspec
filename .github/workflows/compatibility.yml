@@ -1,0 +1,85 @@
+name: POSIX Git compatibility
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reference-git:
+    name: Linux Git ${{ matrix.git }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        git: ['2.43.0', '2.56.0']
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - name: Record host and source versions
+        run: |
+          mkdir -p evidence/local
+          {
+            uname -a
+            git rev-parse HEAD
+            node --version
+            python3 --version
+          } > evidence/local/compatibility-host.txt
+      - name: Install reference build dependencies
+        timeout-minutes: 5
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y build-essential zlib1g-dev ca-certificates curl xz-utils
+      - name: Install official MoonBit toolchain
+        timeout-minutes: 5
+        run: |
+          curl --fail --show-error --location --retry 3 --connect-timeout 20 --max-time 120 \
+            https://cli.moonbitlang.com/install/unix.sh -o "$RUNNER_TEMP/install-moon.sh"
+          bash "$RUNNER_TEMP/install-moon.sh" 2>&1 | tee evidence/local/moon-install.log
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Build pinned reference Git
+        id: reference
+        timeout-minutes: 15
+        run: |
+          bash scripts/build-reference-git.sh '${{ matrix.git }}' \
+            "$RUNNER_TEMP/moonpathspec-reference" 'evidence/local/reference-git-${{ matrix.git }}'
+      - name: Build MoonBit selection core
+        id: core
+        timeout-minutes: 5
+        run: |
+          moon version --all | tee evidence/local/moon-version.txt
+          moon build --target js --release --deny-warn 2>&1 | tee evidence/local/moon-build.log
+      - name: Compare general pathspec cases with reference Git
+        if: ${{ !cancelled() && steps.reference.outcome == 'success' && steps.core.outcome == 'success' }}
+        timeout-minutes: 5
+        run: |
+          python3 tests/git_oracle.py --git '${{ steps.reference.outputs.git }}' \
+            --node "$(command -v node)" --platform posix \
+            --output 'evidence/local/git-oracle-${{ matrix.git }}-posix.json' \
+            2>&1 | tee evidence/local/git-oracle.log
+      - name: Compare escaped and mixed wildcard cases with reference Git
+        if: ${{ !cancelled() && steps.reference.outcome == 'success' && steps.core.outcome == 'success' }}
+        timeout-minutes: 5
+        run: |
+          python3 tests/escaped_oracle.py --git '${{ steps.reference.outputs.git }}' \
+            --node "$(command -v node)" --platform posix \
+            --output 'evidence/local/escaped-oracle-${{ matrix.git }}-posix.json' \
+            2>&1 | tee evidence/local/escaped-oracle.log
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        if: always()
+        with:
+          name: posix-git-${{ matrix.git }}
+          path: evidence/local/
+          if-no-files-found: warn
+          retention-days: 14

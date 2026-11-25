@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "reference": {
+    "upstream_tag": "v2.51.0",
+    "sources": [
+      "https://github.com/git/git/blob/v2.51.0/t/t6130-pathspec-noglob.sh",
+      "https://github.com/git/git/blob/v2.51.0/t/t6137-pathspec-wildcards-literal.sh",
+      "https://github.com/git/git/blob/v2.51.0/Documentation/glossary-content.adoc#def_pathspec"
+    ]
+  },
+  "independent_measurement": {
+    "date": "2026-11-25",
+    "git_version": "git version 2.56.0.windows.4",
+    "platform": "Windows",
+    "command": "git ls-files --full-name -z -- <patterns>",
+    "fixture": "Temporary index populated through git update-index -z --index-info; indexed UTF-8 names include literal * and ? without requiring Windows worktree files. Attributes read back with git check-attr -z.",
+    "gitattributes": "docs/** publish -generated kind=text\ndocs/b* generated\n",
+    "limitations": "Most escape requests use top magic to preserve raw pattern bytes on Windows. This is not a claim to have executed native POSIX Git. Case 08 exact non-top POSIX argv still needs Linux verification."
+  },
+  "cases": [
+    {
+      "file": "01-escaped-brackets.json",
+      "name": "转义方括号只选字面文件",
+      "selected": [
+        "docs/[draft].txt"
+      ],
+      "explain_paths": [
+        "docs/[draft].txt",
+        "docs/draft.txt"
+      ],
+      "oracle": "Top-magic raw argv independently executed with Git 2.56.0.windows.4"
+    },
+    {
+      "file": "02-glob-plus-escaped-brackets.json",
+      "name": "glob星号与字面方括号混用",
+      "selected": [
+        "docs/[draft].txt",
+        "docs/a[draft].txt",
+        "docs/b[draft].txt",
+        "docs/skip[draft].txt",
+        "docs/keep[draft].txt"
+      ],
+      "explain_paths": [
+        "docs/a[draft].txt",
+        "docs/nested/a[draft].txt"
+      ],
+      "oracle": "Top-magic raw argv independently executed with Git 2.56.0.windows.4"
+    },
+    {
+      "file": "03-default-plus-escaped-brackets.json",
+      "name": "默认星号可跨目录后匹配字面方括号",
+      "selected": [
+        "docs/[draft].txt",
+        "docs/a[draft].txt",
+        "docs/b[draft].txt",
+        "docs/nested/a[draft].txt",
+        "docs/skip[draft].txt",
+        "docs/keep[draft].txt"
+      ],
+      "explain_paths": [
+        "docs/nested/a[draft].txt"
+      ],
+      "oracle": "Top-magic raw argv independently executed with Git 2.56.0.windows.4"
+    },
+    {
+      "file": "04-escaped-question-and-star.json",
+      "name": "转义问号和星号的并集",
+      "selected": [
+        "docs/a?report.txt",
+        "docs/a*report.txt"
+      ],
+      "explain_paths": [
+        "docs/a?report.txt",
+        "docs/a*report.txt",
+        "docs/abreport.txt"
+      ],
+      "oracle": "Top-magic raw argv independently executed with Git 2.56.0.windows.4"
+    },
+    {
+      "file": "05-wildcard-then-escaped-specials.json",
+      "name": "星号之后紧接转义特殊字符",
+      "selected": [
+        "docs/a?report.txt",
+        "docs/a*report.txt"
+      ],
+      "explain_paths": [
+        "docs/a?report.txt",
+        "docs/a*report.txt",
+        "docs/areport.txt"
+      ],
+      "oracle": "Top-magic raw argv independently executed with Git 2.56.0.windows.4"
+    },
+    {
+      "file": "06-literal-glob-exclude.json",
+      "name": "不同规则组合literal、glob与排除",
+      "selected": [
+        "docs/[draft].txt",
+        "docs/a[draft].txt",
+        "docs/b[draft].txt",
+        "docs/keep[draft].txt",
+        "assets/logo[dark].svg"
+      ],
+      "explain_paths": [
+        "docs/skip[draft].txt",
+        "assets/logo[dark].svg",
+        "assets/logod.svg"
+      ],
+      "oracle": "Top-magic raw argv independently executed with Git 2.56.0.windows.4"
+    },
+    {
+      "file": "07-prefix-top-attributes.json",
+      "name": "子目录调用中top、属性条件与转义组合",
+      "selected": [
+        "docs/[draft].txt",
+        "docs/a[draft].txt",
+        "docs/keep[draft].txt",
+        "LICENSE"
+      ],
+      "explain_paths": [
+        "docs/b[draft].txt",
+        "docs/skip[draft].txt",
+        "LICENSE"
+      ],
+      "oracle": "Top-magic raw argv independently executed with Git 2.56.0.windows.4"
+    },
+    {
+      "file": "08-prefix-relative-attributes.json",
+      "name": "相对prefix回到根后匹配转义字符",
+      "selected": [
+        "docs/[draft].txt",
+        "docs/a[draft].txt",
+        "docs/keep[draft].txt",
+        "LICENSE"
+      ],
+      "explain_paths": [
+        "docs/a[draft].txt",
+        "docs/b[draft].txt",
+        "LICENSE"
+      ],
+      "oracle": "normalization-equivalent top input measured on Windows; exact non-top POSIX argv pending Linux verification"
+    },
+    {
+      "file": "09-malformed-bracket-fallback.json",
+      "name": "未闭合方括号保留精确路径回退",
+      "selected": [
+        "docs/a[broken"
+      ],
+      "explain_paths": [
+        "docs/a[broken",
+        "docs/[draft].txt"
+      ],
+      "oracle": "Top-magic raw argv independently executed with Git 2.56.0.windows.4"
+    },
+    {
+      "file": "10-raw-exact-plus-wildcard.json",
+      "name": "有效字符类同时保留原字符串精确路径",
+      "selected": [
+        "docs/f[o][o].txt",
+        "docs/foo.txt"
+      ],
+      "explain_paths": [
+        "docs/f[o][o].txt",
+        "docs/foo.txt"
+      ],
+      "oracle": "Top-magic raw argv independently executed with Git 2.56.0.windows.4"
+    },
+    {
+      "file": "11-descending-range.json",
+      "name": "保留Git实测倒序范围行为",
+      "selected": [
+        "docs/file[z-a].txt",
+        "docs/filez.txt"
+      ],
+      "explain_paths": [
+        "docs/file[z-a].txt",
+        "docs/filez.txt"
+      ],
+      "oracle": "Top-magic raw argv independently executed with Git 2.56.0.windows.4"
+    },
+    {
+      "file": "12-dangling-escape.json",
+      "name": "尾随转义不报语法错误且没有匹配",
+      "selected": [],
+      "explain_paths": [
+        "docs/a[broken",
+        "docs/areport.txt"
+      ],
+      "oracle": "Top-magic raw argv independently executed with Git 2.56.0.windows.4"
+    },
+    {
+      "file": "13-windows-preprocessing.json",
+      "name": "显式Windows预处理与POSIX原文区别",
+      "selected": [],
+      "explain_paths": [
+        "docs/[draft].txt"
+      ],
+      "oracle": "Git 2.56.0.windows.4 non-top argv independently executed"
+    }
+  ]
+}

@@ -1,15 +1,13 @@
 {
   "schema_version": 1,
   "profile": {
-    "name": "GPP-1 UTF-8 Git pathspec selection profile",
+    "name": "UTF-8 Git pathspec selection differential fixture",
     "oracle": "git ls-files --full-name -z -- <patterns>; staged UTF-8 paths; no commits",
     "cwd": "prefix names an existing repository directory",
     "order": "Expected Git set is restored to caller candidate order",
     "attributes": "Working-tree .gitattributes, read with git check-attr -z for every candidate/name pair; all four states retained",
     "exclusions": "Not a full Git command compatibility claim. No arbitrary non-UTF-8 names, environment pathspec flags, filesystem traversal, tree-ish attributes, platform-specific case folding, symlinks, submodules or sparse index.",
-    "explicit_rejections": {
-      "unsupported_backslash": "Nonliteral pattern bodies containing a backslash are explicitly rejected. Git results are retained as research observations; these checks are counted separately from differential equivalence. Use literal magic for literal metacharacters."
-    }
+    "backslashes": "Every case is compared directly with Git. Each run records its native POSIX or Windows platform and supplies the corresponding explicit core option; ordinary Windows patterns and top magic can normalize backslashes differently."
   },
   "attribute_names": [
     "flag",
@@ -204,8 +202,7 @@
       "prefix": "",
       "patterns": [
         "docs/\\[draft\\].txt"
-      ],
-      "expected_profile_rejection": "unsupported_backslash"
+      ]
     },
     {
       "id": "bracket-range",
@@ -1289,8 +1286,7 @@
       "prefix": "",
       "patterns": [
         ":(glob,icase)case/*\\A"
-      ],
-      "expected_profile_rejection": "unsupported_backslash"
+      ]
     },
     {
       "id": "icase-escaped-lower",
@@ -1298,8 +1294,7 @@
       "prefix": "",
       "patterns": [
         ":(glob,icase)case/*\\a"
-      ],
-      "expected_profile_rejection": "unsupported_backslash"
+      ]
     },
     {
       "id": "icase-ordinary-upper",

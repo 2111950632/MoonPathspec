@@ -1,0 +1,125 @@
+{
+  "patterns": [
+    ":(glob,attr:publish -generated)../docs/*\\[draft\\].txt",
+    ":(top,literal)LICENSE",
+    ":(top,exclude,literal)docs/skip[draft].txt"
+  ],
+  "paths": [
+    "docs/[draft].txt",
+    "docs/draft.txt",
+    "docs/a[draft].txt",
+    "docs/b[draft].txt",
+    "docs/nested/a[draft].txt",
+    "docs/a?report.txt",
+    "docs/abreport.txt",
+    "docs/a*report.txt",
+    "docs/areport.txt",
+    "docs/a[broken",
+    "docs/file[z-a].txt",
+    "docs/filez.txt",
+    "docs/file[!].txt",
+    "docs/file!.txt",
+    "docs/f[o][o].txt",
+    "docs/foo.txt",
+    "docs/skip[draft].txt",
+    "docs/keep[draft].txt",
+    "assets/logo[dark].svg",
+    "assets/logod.svg",
+    "src/item[draft].txt",
+    "src/a[draft].txt",
+    "LICENSE"
+  ],
+  "prefix": "src",
+  "attributes": {
+    "docs/[draft].txt": {
+      "publish": true,
+      "generated": false,
+      "kind": "text"
+    },
+    "docs/draft.txt": {
+      "publish": true,
+      "generated": false,
+      "kind": "text"
+    },
+    "docs/a[draft].txt": {
+      "publish": true,
+      "generated": false,
+      "kind": "text"
+    },
+    "docs/b[draft].txt": {
+      "publish": true,
+      "generated": true,
+      "kind": "text"
+    },
+    "docs/nested/a[draft].txt": {
+      "publish": true,
+      "generated": false,
+      "kind": "text"
+    },
+    "docs/a?report.txt": {
+      "publish": true,
+      "generated": false,
+      "kind": "text"
+    },
+    "docs/abreport.txt": {
+      "publish": true,
+      "generated": false,
+      "kind": "text"
+    },
+    "docs/a*report.txt": {
+      "publish": true,
+      "generated": false,
+      "kind": "text"
+    },
+    "docs/areport.txt": {
+      "publish": true,
+      "generated": false,
+      "kind": "text"
+    },
+    "docs/a[broken": {
+      "publish": true,
+      "generated": false,
+      "kind": "text"
+    },
+    "docs/file[z-a].txt": {
+      "publish": true,
+      "generated": false,
+      "kind": "text"
+    },
+    "docs/filez.txt": {
+      "publish": true,
+      "generated": false,
+      "kind": "text"
+    },
+    "docs/file[!].txt": {
+      "publish": true,
+      "generated": false,
+      "kind": "text"
+    },
+    "docs/file!.txt": {
+      "publish": true,
+      "generated": false,
+      "kind": "text"
+    },
+    "docs/f[o][o].txt": {
+      "publish": true,
+      "generated": false,
+      "kind": "text"
+    },
+    "docs/foo.txt": {
+      "publish": true,
+      "generated": false,
+      "kind": "text"
+    },
+    "docs/skip[draft].txt": {
+      "publish": true,
+      "generated": false,
+      "kind": "text"
+    },
+    "docs/keep[draft].txt": {
+      "publish": true,
+      "generated": false,
+      "kind": "text"
+    }
+  }
+}
