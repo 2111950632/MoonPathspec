@@ -9,6 +9,8 @@ and 2.56.0 for supplied UTF-8 repository-relative candidate files and typed
 attributes. GPP-1 is the historical 0.1.x scope, not a completion endpoint.
 Do not hide a legal-syntax gap behind a new restricted compatibility profile.
 Default to POSIX preprocessing and expose Windows preprocessing explicitly.
+Select fixed Git reference versions where their independently measured outcomes
+differ; do not remove failing cases from the differential suite.
 
 Use explicit limits and error results. Malformed wildcard matching may be a
 successful nonmatch or raw-name match in Git; do not turn it into a new syntax

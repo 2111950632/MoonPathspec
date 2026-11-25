@@ -27,6 +27,13 @@ fn parser_value_byte(byte : Byte) -> Bool {
 
 ///|
 fn parser_options_error(options : PathspecOptions) -> ParseError? {
+  if !["2.43.0", "2.56.0"].contains(options.git_version) {
+    return Some(
+      parser_error(
+        "invalid_git_version", 0, "git_version must select 2.43.0 or 2.56.0",
+      ),
+    )
+  }
   if options.glob && options.noglob {
     return Some(
       parser_error(

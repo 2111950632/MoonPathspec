@@ -23,9 +23,9 @@ node cli.mjs explain --input examples/escaped-pathspec/06-literal-glob-exclude.j
 
 | 层次 | 写法 |
 |---|---|
-| API 实际字符串 | :(top,glob)docs/*\[draft\].txt |
-| JSON 文本 | ":(top,glob)docs/*\\[draft\\].txt" |
-| PowerShell 或 Bash 的单引号参数 | ':(top,glob)docs/*\[draft\].txt' |
+| API 实际字符串 | `:(top,glob)docs/*\[draft\].txt` |
+| JSON 文本 | `":(top,glob)docs/*\\[draft\\].txt"` |
+| PowerShell 或 Bash 的单引号参数 | `':(top,glob)docs/*\[draft\].txt'` |
 
 shell 的外层单引号防止 shell 提前展开星号，不会成为 API 字符串的一部分。JSON 中两个反斜线是 JSON 编码，不是要求核心消费两个反斜线。Windows 命令提示符 cmd.exe 的单引号规则不同，建议使用本目录 JSON 请求文件。
 
@@ -45,19 +45,19 @@ literal magic 是整条规则按字面匹配，不是在同一条规则内启用
 
 | 编号 | 关键规则 / 组合 | 预期 |
 |---|---|---|
-| 01 | :(top)docs/\[draft\].txt | 只选 docs/[draft].txt，不选 docs/draft.txt |
-| 02 | :(top,glob)docs/*\[draft\].txt | 选择 docs/ 下 5 个以字面 [draft].txt 结尾的直接文件；不跨入 nested/ |
-| 03 | :(top)docs/*\[draft\].txt | 默认星号可跨 /，在第 02 例之外再选择 nested/a[draft].txt，共 6 个 |
-| 04 | 两条规则 a\?report.txt 与 a\*report.txt | 只选文件名中真正带 ? 或 * 的两个文件，不选 abreport.txt |
-| 05 | 两条 glob 规则 *\?report.txt 与 *\*report.txt | 星号之后的转义仍为字面；同样只选前述两个文件 |
-| 06 | literal logo[dark].svg + glob *\[draft\].txt + literal exclude skip[draft].txt | 方括号图标与文档并集，最终排除 skip，共 5 个；不选 logod.svg |
+| 01 | `:(top)docs/\[draft\].txt` | 只选 docs/[draft].txt，不选 docs/draft.txt |
+| 02 | `:(top,glob)docs/*\[draft\].txt` | 选择 docs/ 下 5 个以字面 [draft].txt 结尾的直接文件；不跨入 nested/ |
+| 03 | `:(top)docs/*\[draft\].txt` | 默认星号可跨 /，在第 02 例之外再选择 nested/a[draft].txt，共 6 个 |
+| 04 | `两条规则 a\?report.txt 与 a\*report.txt` | 只选文件名中真正带 ? 或 * 的两个文件，不选 abreport.txt |
+| 05 | `两条 glob 规则 *\?report.txt 与 *\*report.txt` | 星号之后的转义仍为字面；同样只选前述两个文件 |
+| 06 | `literal logo[dark].svg + glob *\[draft\].txt + literal exclude skip[draft].txt` | 方括号图标与文档并集，最终排除 skip，共 5 个；不选 logod.svg |
 | 07 | prefix=src，top+glob+attr:publish -generated，附加根 LICENSE 并排除 skip | 选择 [draft].txt、a[draft].txt、keep[draft].txt、LICENSE；b[draft].txt 被 generated=true 阻止 |
-| 08 | prefix=src，相对 ../docs/*\[draft\].txt + 属性，根 LICENSE 与排除使用 top | POSIX 规则预期与第 07 例相同；精确非 top 参数仍需 Linux Git 对照 |
+| 08 | `prefix=src，相对 ../docs/*\[draft\].txt + 属性，根 LICENSE 与排除使用 top` | POSIX 规则预期与第 07 例相同；精确非 top 参数仍需 Linux Git 对照 |
 | 09 | 未闭合 docs/a[broken 与不存在的 docs/no[ | 有同名候选时保留精确路径回退，选 a[broken；不存在时合法空匹配 |
 | 10 | :(top,glob)docs/f[o][o].txt | 同时选择原字符串同名 f[o][o].txt 与通配命中的 foo.txt，保留 Git 的“路径匹配自身”行为 |
 | 11 | :(top)docs/file[z-a].txt | 实测选原字符串同名 file[z-a].txt 和 filez.txt；不擅自把倒序范围改成语法错误 |
 | 12 | docs/no 后一个尾随反斜线，以及 docs/* 后一个尾随反斜线 | 两项都没有命中，成功空集；不是语法错误或资源错误 |
-| 13 | 非 top docs/\[draft\].txt，显式 options.windows=true | Windows Git 路径预处理会把反斜线视为分隔符，本候选集为空；与默认 POSIX 语义分开 |
+| 13 | `非 top docs/\[draft\].txt，显式 options.windows=true` | Windows Git 路径预处理会把反斜线视为分隔符，本候选集为空；与默认 POSIX 语义分开 |
 
 第 06 例中 skip[draft].txt 的解释应同时记录 included_by=[1]、excluded_by=[2]，最终不被选中。第 07 例中 b[draft].txt 属性不满足，不能当作已经包含后再排除；LICENSE 则由独立 top,literal 规则选中。这些差别可由解释输出直接核对。
 

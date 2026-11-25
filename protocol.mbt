@@ -77,7 +77,12 @@ fn ps_limits(value : Json?) -> Result[Limits, String] {
 ///|
 // Git v2.56 parse.c accepts case-insensitive boolean words, the empty string,
 // or an Int32 parsed with base 0 and an optional k/m/g (1024) suffix.
-fn ps_environment_bool(text : String) -> Result[Bool, String] {
+// Our fixed Linux references use glibc C23 binary prefixes; Windows Git does not.
+fn ps_environment_bool(
+  text : String,
+  windows~ : Bool = false,
+  git_version~ : String = "2.56.0",
+) -> Result[Bool, String] {
   match ps_ascii_fold(text) {
     "" | "false" | "no" | "off" => return Ok(false)
     "true" | "yes" | "on" => return Ok(true)
@@ -114,10 +119,19 @@ fn ps_environment_bool(text : String) -> Result[Bool, String] {
       (bytes[cursor + 1] == b'x' || bytes[cursor + 1] == b'X') {
       base = 16
       cursor += 2
+    } else if !windows &&
+      cursor + 1 < end &&
+      (bytes[cursor + 1] == b'b' || bytes[cursor + 1] == b'B') {
+      base = 2
+      cursor += 2
     }
   }
   let digit_start = cursor
-  let limit = if negative { -2147483648 } else { -2147483647 }
+  let limit = if negative && git_version != "2.43.0" {
+    -2147483648
+  } else {
+    -2147483647
+  }
   let mut value = 0
   while cursor < end {
     let byte = bytes[cursor]
@@ -163,7 +177,16 @@ fn ps_pathspec_options(
     _ => return Err("options must be an object")
   }
   let combined : Map[String, Bool] = Map([])
+  let mut git_version = "2.56.0"
   for name, raw in fields {
+    if name == "git_version" {
+      match raw {
+        String(value) if ["2.43.0", "2.56.0"].contains(value) =>
+          git_version = value
+        _ => return Err("git_version must be 2.43.0 or 2.56.0")
+      }
+      continue
+    }
     if !["literal", "glob", "noglob", "icase", "windows"].contains(name) {
       return Err("unknown pathspec option: " + name)
     }
@@ -191,7 +214,12 @@ fn ps_pathspec_options(
       _ => return Err("pathspec environment values must be raw strings")
     }
     if !combined.contains(option) {
-      match ps_environment_bool(text) {
+      match
+        ps_environment_bool(
+          text,
+          windows=combined.get("windows").unwrap_or(false),
+          git_version~,
+        ) {
         Ok(value) => combined.set(option, value)
         Err(message) => return Err(name + ": " + message)
       }
@@ -203,6 +231,7 @@ fn ps_pathspec_options(
     noglob: combined.get("noglob").unwrap_or(false),
     icase: combined.get("icase").unwrap_or(false),
     windows: combined.get("windows").unwrap_or(false),
+    git_version,
   })
 }
 
@@ -363,6 +392,7 @@ fn ps_request(request : Json, work_ceiling~ : Int32 = 200000000) -> Json {
         "noglob": Json(options.noglob),
         "icase": Json(options.icase),
         "windows": Json(options.windows),
+        "git_version": Json(options.git_version),
       },
       "patterns": Json(
         plan.clauses.map(clause => {

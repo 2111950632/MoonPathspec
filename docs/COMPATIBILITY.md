@@ -102,6 +102,23 @@ numbers and overflow are errors. JSON options override corresponding raw
 environment values; CLI options override JSON fields. Node transports values
 and flags; it does not implement matching or Boolean conversion.
 
+### Explicit reference version and measured numeric differences
+
+`PathspecOptions.git_version` / JSON `options.git_version` / CLI
+`--git-version` selects `2.56.0` by default or `2.43.0`. This chooses an actual
+Git version, not a restricted syntax profile. Both versions retain the same
+complete public pathspec target; differing outcomes remain version-specific.
+
+The first native Linux matrix exposed numeric environment differences: 2.43.0
+rejects `-2147483648` and `-2g`; 2.56.0 accepts them. The Ubuntu 24.04/glibc
+reference builds accept C23 `0b`/`0B` integer prefixes; Windows Git 2.56.0 does
+not. `windows` selects that numeric baseline as well as path preprocessing.
+Other C runtime conventions can be adapted into explicit Boolean options.
+No pathspec syntax is removed because of the environment's representation.
+The differential runner records the selected version and native platform and
+compares each raw string with that real Git process. These cases stay in the
+suite after fixes; earlier failing runs are not represented as success.
+
 ## Resource and mutability contract
 
 Limits protect resource use without labeling legitimate syntax unsupported.

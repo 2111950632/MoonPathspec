@@ -171,3 +171,39 @@ test "registry public global settings and protected prefix are available" {
   assert_eq(@moonpathspec.select(posix, paths).unwrap().selected, ["a*"])
   assert_eq(@moonpathspec.select(windows, paths).unwrap().selected, ["a/file"])
 }
+
+///|
+test "registry JSON environment retains Linux and Windows numeric distinction" {
+  let request : Json = {
+    "patterns": Json([":(top)A.TXT"]),
+    "paths": Json(["a.txt"]),
+    "environment": { "GIT_ICASE_PATHSPECS": Json("0b1") },
+  }
+  let output = @moonpathspec.dispatch(request.stringify())
+  let result = @json.parse(output[:])
+  assert_eq(registry_field(result, "selected"), Json(["a.txt"]))
+  let request : Json = {
+    "patterns": Json([":(top)A.TXT"]),
+    "paths": Json(["a.txt"]),
+    "options": { "windows": Json(true) },
+    "environment": { "GIT_ICASE_PATHSPECS": Json("0b1") },
+  }
+  let output = @moonpathspec.dispatch(request.stringify())
+  let result = @json.parse(output[:])
+  assert_eq(registry_field(result, "exit_code"), Json(2))
+  assert_eq(registry_field(result, "selected"), Json::array([]))
+}
+
+///|
+test "registry public reference version preserves Git 2.43 integer errors" {
+  let reference = { ..@moonpathspec.default_pathspec_options(), git_version: "2.43.0", }
+  let plan = @moonpathspec.compile(["a*"], options=reference).unwrap()
+  assert_eq(@moonpathspec.select(plan, ["abc"]).unwrap().selected, ["abc"])
+  let request : Json = {
+    "patterns": Json(["A"]), "paths": Json(["a"]),
+    "options": { "git_version": Json("2.43.0") },
+    "environment": { "GIT_ICASE_PATHSPECS": Json("-2g") },
+  }
+  let output = @moonpathspec.dispatch(request.stringify())
+  assert_eq(registry_field(@json.parse(output[:]), "exit_code"), Json(2))
+}

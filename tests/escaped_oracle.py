@@ -48,11 +48,13 @@ def clean_env(empty):
 
 
 class VirtualIndex:
-    def __init__(self, directory, git, paths, attributes):
+    def __init__(self, directory, git, paths, attributes, platform, reference_version):
         self.root = Path(directory)
         self.root.mkdir(parents=True)
         self.git = git
         self.paths = paths
+        self.platform = platform
+        self.reference_version = reference_version
         self.commands = 0
         empty = self.root.parent / (self.root.name + "-empty-config")
         empty.write_bytes(b"")
@@ -141,7 +143,7 @@ class VirtualIndex:
     def request(self, case):
         return {"patterns": case["patterns"], "paths": self.paths,
                 "prefix": case.get("prefix", ""), "attributes": self.attributes,
-                "options": case.get("options", {}),
+                "options": {"windows": self.platform == "windows", "git_version": self.reference_version, **case.get("options", {})},
                 "environment": case.get("environment", {}), "command": "explain"}
 
 
@@ -246,7 +248,8 @@ def fixed_cases(platform):
         "", "true", "false", "yes", "no", "on", "off", "TRUE", "FaLsE", "1", "0", "-1",
         "+1", "01", "0x1", "010", "08", "0b1", "1k", "0k", "-2g", "2g", "2147483647",
         "-2147483648", "2147483648", "1.0", "not-a-bool", " yes", "true ", " 1", "1 ",
-        "1K", "1m", "1G",
+        "1K", "1m", "1G", "0B1", "0b0", "-0b10", "+0b1", "0b2", "0b", "0b1k",
+        "0b10000000000000000000000000000000", "-0b10000000000000000000000000000000",
     ]):
         cases.append({"id": "environment-icase-%02d" % index, "category": "environment",
                       "patterns": [":(top)DOCS/*.TXT"], "prefix": "", "options": {},
@@ -361,10 +364,11 @@ def main():
         platform = native if args.platform == "auto" else args.platform
         if platform != native:
             raise RuntimeError("--platform cannot turn native %s Git into %s Git" % (native, platform))
+        reference_version = "2.43.0" if version.startswith("git version 2.43.") else "2.56.0"
         node_version = subprocess.run([args.node, "--version"], capture_output=True,
                                       timeout=15, check=True).stdout.decode().strip()
         report.update({"git_version": version, "node_version": node_version,
-                       "native_platform": native, "platform": platform,
+                       "native_platform": native, "platform": platform, "reference_version": reference_version,
                        "oracle_command": "git [global pathspec flags] ls-files --full-name -z -- <patterns>",
                        "candidate_source": "index-only update-index -z --index-info",
                        "attribute_source": "actual git check-attr -z for every candidate/name",
@@ -375,9 +379,9 @@ def main():
         base_paths = first["paths"]
         with tempfile.TemporaryDirectory(prefix="moonpathspec-escaped-oracle-") as directory:
             base = VirtualIndex(Path(directory) / "examples", args.git, base_paths,
-                                examples["independent_measurement"]["gitattributes"])
+                                examples["independent_measurement"]["gitattributes"], platform, reference_version)
             broad = VirtualIndex(Path(directory) / "boundaries", args.git,
-                                 broad_paths(base_paths, platform), ATTRIBUTES)
+                                 broad_paths(base_paths, platform), ATTRIBUTES, platform, reference_version)
             jobs = []
             for scenario in examples["cases"]:
                 request = json.loads((EXAMPLES / scenario["file"]).read_text(encoding="utf-8"))

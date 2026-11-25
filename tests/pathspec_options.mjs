@@ -75,3 +75,25 @@ test('inspect reports explicit path preprocessing and byte-prefix metadata', () 
   assert.equal(cli(['inspect', '--path-mode', 'windows'], input).data.options.windows, true);
   assert.equal(cli(['inspect', '--path-mode', 'posix'], { ...input, options: { windows: true } }).data.options.windows, false);
 });
+
+test('Linux and Windows reference modes retain measured binary environment behavior', () => {
+  const input = { patterns: [':(top)A.TXT'], paths: ['a.txt'] };
+  const values = { GIT_ICASE_PATHSPECS: '0b1' };
+  assert.deepEqual(cli(['--path-mode', 'posix'], input, values).data.selected, ['a.txt']);
+  const windows = cli(['--path-mode', 'windows'], input, values);
+  assert.equal(windows.status, 2);
+  assert.equal(windows.data.error.code, 'invalid_request');
+  assert.deepEqual(windows.data.selected, []);
+});
+
+test('explicit Git reference version keeps independently measured signed limits', () => {
+  const input = { patterns: ['A'], paths: ['a'] };
+  const values = { GIT_ICASE_PATHSPECS: '-2g' };
+  assert.deepEqual(cli(['--git-version', '2.56.0'], input, values).data.selected, ['a']);
+  const legacy = cli(['--git-version', '2.43.0'], input, values);
+  assert.equal(legacy.status, 2);
+  assert.equal(legacy.data.error.code, 'invalid_request');
+  const inspected = cli(['inspect', '--git-version', '2.43.0'], { patterns: ['*'] });
+  assert.equal(inspected.data.options.git_version, '2.43.0');
+  assert.equal(cli(['--git-version', 'unknown'], input).status, 2);
+});

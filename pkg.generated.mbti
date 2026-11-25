@@ -120,6 +120,7 @@ pub(all) struct PathspecOptions {
   noglob : Bool
   icase : Bool
   windows : Bool
+  git_version : String
 }
 pub fn PathspecOptions::equal(Self, Self) -> Bool
 pub fn PathspecOptions::not_equal(Self, Self) -> Bool

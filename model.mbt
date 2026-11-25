@@ -48,7 +48,8 @@ pub(all) struct ParsedPattern {
 ///|
 /// Explicit equivalents of Git's global pathspec settings. The library does not
 /// read process environment variables. `windows` selects path preprocessing in
-/// the caller-facing compiler; magic grammar itself is platform-independent.
+/// the caller-facing compiler and numeric environment baseline. `git_version`
+/// chooses a fixed reference version where observed Git versions differ.
 #derive(Eq, @debug.Debug)
 pub(all) struct PathspecOptions {
   literal : Bool
@@ -56,11 +57,19 @@ pub(all) struct PathspecOptions {
   noglob : Bool
   icase : Bool
   windows : Bool
+  git_version : String
 }
 
 ///|
 pub fn default_pathspec_options() -> PathspecOptions {
-  { literal: false, glob: false, noglob: false, icase: false, windows: false, }
+  {
+    literal: false,
+    glob: false,
+    noglob: false,
+    icase: false,
+    windows: false,
+    git_version: "2.56.0",
+  }
 }
 
 ///|

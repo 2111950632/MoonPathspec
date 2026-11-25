@@ -4,7 +4,7 @@ MoonBit 原生 Git pathspec 文件集合选择引擎。面向构建、打包、�
 
 兼容终点是 **Git 2.43.0 与 2.56.0 的完整公共 pathspec 语法和路径匹配语义**，输入模型为调用者提供的 UTF-8 仓库相对候选文件、当前目录 prefix 和四态属性。0.1.x 的 GPP-1 是历史范围，本轮不再以自行缩小的语法子集作为完成终点。目标、版本差别和责任边界见[兼容说明](docs/COMPATIBILITY.md)。
 
-**0.2.0 本地整套验证已通过。** JS/Wasm GC 各 74 项核心测试、Node 40 项、13 个组合案例；Windows Git 2.56.0 常规差分 444 项、扩展差分 352 项通过，7 项仅原生 POSIX 场景明确未运行。独立解压包公开 API 两后端各 7 项通过，分发包在源码树外运行通过，见[本地记录](evidence/validation-0.2.0.json)。[Mooncakes 0.2.0](https://mooncakes.io/docs/2111950632/moonpathspec%400.2.0) 已发布，独立项目实际下载后两后端各 7 项 API 测试通过，11 个生产源码与清单/接口文件一致，见[下载验证](evidence/mooncakes-validation-0.2.0.json)。Linux 双版本对照及线上平台矩阵仍待完成，不由本地数据推定。0.1.x 证据保留为历史。
+**当前源码为 0.2.1，正在复验真实 Linux CI 发现的版本/平台边界修复。** 0.2.0 本地整套验证曾通过： JS/Wasm GC 各 74 项核心测试、Node 40 项、13 个组合案例；Windows Git 2.56.0 常规差分 444 项、扩展差分 352 项通过，7 项仅原生 POSIX 场景明确未运行。独立解压包公开 API 两后端各 7 项通过，分发包在源码树外运行通过，见[本地记录](evidence/validation-0.2.0.json)。[Mooncakes 0.2.0](https://mooncakes.io/docs/2111950632/moonpathspec%400.2.0) 已发布，独立项目实际下载后两后端各 7 项 API 测试通过，11 个生产源码与清单/接口文件一致，见[下载验证](evidence/mooncakes-validation-0.2.0.json)。Linux 双版本对照及线上平台矩阵仍待完成，不由本地数据推定。0.1.x 证据保留为历史。
 
 解析、匹配、属性条件、路径模式处理、预算和 JSON 诊断均由 MoonBit 实现。Node.js 负责命令行、UTF-8 文件输入输出和运行编译产物；运行时不启动 Git。候选发现、Git index、工作树枚举和 `.gitattributes` 的解析由接入方负责。
 
@@ -46,10 +46,13 @@ node examples/ci-package/run.mjs
 node cli.mjs --glob-pathspecs --path doc/a.jpg --path doc/sub/b.jpg -- 'doc/*.jpg'
 node cli.mjs inspect --icase-pathspecs -- ':(prefix:4)src/A.txt'
 node cli.mjs --path-mode posix --input examples/escaped-pathspec/01-escaped-brackets.json
+node cli.mjs inspect --git-version 2.43.0 -- '*.txt'
 node cli.mjs --help
 ```
 
 默认使用 **POSIX 路径语义**，宿主运行在 Windows 不会自动切换。显式 `--path-mode windows` 或 JSON `options.windows=true` 启用 Windows Git 的非 top 路径预处理；实际匹配规则与 magic 仍由核心处理。候选路径统一用 `/`。
+
+`--git-version 2.56.0`（默认）或 `2.43.0` 选择固定参考语义，对应 JSON/API `options.git_version`。实际双版本检查发现：2.43 拒绝环境整数 `-2147483648` / `-2g`，2.56 接受；当前 Linux/glibc 参考接受 `0b` 二进制前缀，Windows Git 不接受。这些差异由 MoonBit 按版本/平台处理，使用明确布尔 options 时无需解析环境文本。其他 C 运行库可由接入方提供明确布尔值；不据此排除任何路径模式语法。
 
 全局选项为 `--literal-pathspecs`、`--glob-pathspecs`、`--noglob-pathspecs`、`--icase-pathspecs`，对应 `--no-…-pathspecs` 可关闭同一设置。literal 全局模式同时关闭 magic 解析；noglob 仍允许某条 `:(glob)` 覆盖，glob 允许某条 `:(literal)` 覆盖。
 
@@ -61,7 +64,7 @@ PowerShell/Bash 应以单引号保护含特殊字符的规则，避免 shell 提
 
 ## MoonBit API
 
-已发布版本可用 `moon add 2111950632/moonpathspec` 安装；索引未更新时先运行 `moon update`。当前版本 [0.2.0](https://mooncakes.io/docs/2111950632/moonpathspec%400.2.0) 已发布并完成独立网络下载验证，包含本轮新增语义与公开选项。
+已发布版本可用 `moon add 2111950632/moonpathspec` 安装；索引未更新时先运行 `moon update`。最近已发布版本 [0.2.0](https://mooncakes.io/docs/2111950632/moonpathspec%400.2.0) 已发布并完成独立网络下载验证；新增 `git_version` 和数值边界修复属于当前 0.2.1 源码，发布状态另行记录。
 
 在消费项目 `moon.pkg` 导入 `"2111950632/moonpathspec"`：
 

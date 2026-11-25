@@ -2,7 +2,7 @@
 import { invoke } from './host.mjs';
 import { readText } from './io.mjs';
 
-const help = `MoonPathspec 0.2.0
+const help = `MoonPathspec 0.2.1
 Usage: node cli.mjs [select|explain|inspect] [options] -- PATTERN...
   --input FILE       JSON request manifest (use - for stdin)
   --paths FILE       UTF-8 file of candidate paths, one per line
@@ -14,6 +14,7 @@ Usage: node cli.mjs [select|explain|inspect] [options] -- PATTERN...
   --literal-pathspecs, --glob-pathspecs, --noglob-pathspecs, --icase-pathspecs
                      Global Git modes; --no-NAME-pathspecs disables a mode
   --path-mode MODE   posix (default) or windows path preprocessing
+  --git-version VER  Reference semantics: 2.56.0 (default) or 2.43.0
   --json             Print the versioned JSON response
   --null             Print selected paths separated by NUL
   --help, --version
@@ -41,11 +42,11 @@ try {
     const arg = args[i];
     if (arg === '--') { patterns.push(...args.slice(i + 1)); break; }
     if (arg === '--help') { process.stdout.write(help); process.exit(0); }
-    if (arg === '--version') { process.stdout.write('0.2.0\n'); process.exit(0); }
+    if (arg === '--version') { process.stdout.write('0.2.1\n'); process.exit(0); }
     if (modeFlags.has(arg)) {
       const [name, value] = modeFlags.get(arg);
       cliOptions[name] = value;
-    } else if (['--input','--paths','--attributes','--limits','--prefix','--path','--path-mode'].includes(arg)) {
+    } else if (['--input','--paths','--attributes','--limits','--prefix','--path','--path-mode','--git-version'].includes(arg)) {
       if (i + 1 >= args.length) throw new Error(`Missing value for ${arg}`);
       const value = args[++i];
       if (arg === '--input') input = value;
@@ -53,6 +54,7 @@ try {
       else if (arg === '--attributes') attrsFile = value;
       else if (arg === '--limits') limitsFile = value;
       else if (arg === '--prefix') prefix = value;
+      else if (arg === '--git-version') cliOptions.git_version = value;
       else if (arg === '--path-mode') {
         if (!['posix', 'windows'].includes(value)) throw new Error('--path-mode requires posix or windows');
         cliOptions.windows = value === 'windows';

@@ -71,21 +71,21 @@ test "protocol options and environment reject unknown keys and wrong types" {
 test "Git environment Boolean spellings include bounded base-zero integers" {
   // Independently measured against Git 2.56.0.windows.4's pathspec settings.
   for value in ["", "FALSE", "no", "Off", "0", "-0", "0x0", "00", "0k"] {
-    assert_eq(ps_environment_bool(value), Ok(false))
+    assert_eq(ps_environment_bool(value, windows=true), Ok(false))
   }
   for
     value in [
       "TRUE", "yes", "On", "1", "2", "-1", "0x10", "010", "1M", "-2g", "2147483647",
       "-2147483648", " 1",
     ] {
-    assert_eq(ps_environment_bool(value), Ok(true))
+    assert_eq(ps_environment_bool(value, windows=true), Ok(true))
   }
   for
     value in [
       "maybe", " true", "true ", "1 ", "08", "0x", "0b1", "1kb", "2g", "2147483648",
       "-2147483649", " ",
     ] {
-    assert_true(ps_environment_bool(value) is Err(_))
+    assert_true(ps_environment_bool(value, windows=true) is Err(_))
   }
 }
 
@@ -342,4 +342,57 @@ test "protocol batch permits its count boundary and stops on exhausted work" {
 ///|
 test "protocol input byte ceiling fails before JSON parsing" {
   ignore(protocol_error(" ".repeat(16777217), "input_limit"))
+}
+
+///|
+test "protocol numeric environment distinguishes Linux and Windows references" {
+  let request : Json = {
+    "patterns": Json([":(top)A.TXT"]),
+    "paths": Json(["a.txt"]),
+    "environment": { "GIT_ICASE_PATHSPECS": Json("0b1") },
+  }
+  assert_eq(
+    protocol_field(protocol_result(request.stringify()), "selected"),
+    Json(["a.txt"]),
+  )
+  let windows : Json = {
+    "patterns": Json([":(top)A.TXT"]),
+    "paths": Json(["a.txt"]),
+    "options": { "windows": Json(true) },
+    "environment": { "GIT_ICASE_PATHSPECS": Json("0b1") },
+  }
+  ignore(protocol_error(windows.stringify(), "invalid_request"))
+  assert_eq(ps_environment_bool("-0b10"), Ok(true))
+  assert_eq(ps_environment_bool("0B0"), Ok(false))
+  assert_true(ps_environment_bool("0b2") is Err(_))
+}
+
+///|
+test "protocol selected Git version preserves signed environment boundary" {
+  for raw in ["-2147483648", "-2g"] {
+    let modern : Json = {
+      "patterns": Json(["A"]),
+      "paths": Json(["a"]),
+      "options": { "git_version": Json("2.56.0") },
+      "environment": { "GIT_ICASE_PATHSPECS": Json(raw) },
+    }
+    assert_eq(
+      protocol_field(protocol_result(modern.stringify()), "selected"),
+      Json(["a"]),
+    )
+    let legacy : Json = {
+      "patterns": Json(["A"]),
+      "paths": Json(["a"]),
+      "options": { "git_version": Json("2.43.0") },
+      "environment": { "GIT_ICASE_PATHSPECS": Json(raw) },
+    }
+    ignore(protocol_error(legacy.stringify(), "invalid_request"))
+  }
+  assert_eq(ps_environment_bool("-2147483647", git_version="2.43.0"), Ok(true))
+  ignore(
+    protocol_error(
+      "{\"patterns\":[],\"paths\":[],\"options\":{\"git_version\":\"unknown\"}}",
+      "invalid_request",
+    ),
+  )
 }
