@@ -21,7 +21,7 @@ MoonPathspec 面向已经拥有文件清单的构建、打包和 CI 工具：调
 
 例如打包工具可将已有文件清单和发布标记交给 `:(attr:publish -generated)src/**`：现有 [属性案例](../examples/attributes.json) 只选择 `src/hand.mbt`，排除已生成文件及未满足发布条件的文件。仓库根目录运行 `node cli.mjs explain --input examples/attributes.json` 可查看逐文件原因。普通模式与 `glob`、prefix 与 literal 的最小案例分别见 [README](../README.md) 和 [literal 输入](../examples/literal.json)。这些案例展示已实现的选择核心，不宣称已接入某个外部构建系统。
 
-接口边界保持明确：输入为 UTF-8 仓库相对路径，`icase` 按 Git 的 ASCII/C-locale 字节行为处理；候选发现、Git index、完整文件系统行为和属性文件解析由接入方负责。这个输入/外部责任边界不能用于排除合法反斜线转义或缩减公共语法。默认 POSIX 与显式 Windows 预处理分别验证，不声称对其他包有未经测量的性能优势。完整终点与验证状态见[兼容说明](COMPATIBILITY.md)。[0.1.1 发布验证](../evidence/mooncakes-validation-0.1.1.json)仅覆盖历史版本，不代表本轮新增行为已通过或发布。
+接口边界保持明确：输入为 UTF-8 仓库相对路径，`icase` 按 Git 的 ASCII/C-locale 字节行为处理；候选发现、Git index、完整文件系统行为和属性文件解析由接入方负责。这个输入/外部责任边界不能用于排除合法反斜线转义或缩减公共语法。默认 POSIX 与显式 Windows 预处理分别验证，不声称对其他包有未经测量的性能优势。完整终点与验证状态见[兼容说明](COMPATIBILITY.md)。[0.2.1 原生双版本及平台 CI](../evidence/github-validation-0.2.1.json)与[实际下载验证](../evidence/mooncakes-validation-0.2.1.json)分别记录本轮结果，历史版本数据不累加为当前完成数量。
 
 [13 个字面特殊字符与通配混用案例](../examples/escaped-pathspec/README.md)提供可运行输入、独立预期和解释，包括同条规则内的星号与转义方括号、转义问号/星号、literal/glob/exclude 组合及 prefix/top/attr。案例为自编清单；研究预期、当前实现通过、Windows Git 对照和原生 Linux Git 对照分别记录，不宣称外部项目已采纳。
 

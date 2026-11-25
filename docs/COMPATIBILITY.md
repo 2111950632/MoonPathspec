@@ -162,7 +162,10 @@ settings and retained in regressions. The complete public target remains the
 endpoint. A finite suite is evidence for recorded inputs and versions, not a
 proof of every possible pathspec or every Git command.
 
-0.2.1 publication/download is being completed separately. Historical 0.2.0 and
-0.1.x evidence retains its original scope. Package extraction, actual registry
-download and organizer review are distinct claims. Any remaining legal-syntax
-gap must be fixed rather than converted to a permanent profile exclusion.
+[Mooncakes 0.2.1 publication and actual download](../evidence/mooncakes-validation-0.2.1.json)
+passed: a fresh independent consumer ran 9 API cases per backend, and 7
+production MoonBit sources plus 4 manifests/interface files were byte-identical.
+Historical 0.2.0/0.1.x evidence retains its original scope. Package extraction,
+actual registry download and organizer review are distinct claims. Any remaining
+legal-syntax gap must be fixed rather than converted to a permanent profile
+exclusion.

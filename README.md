@@ -4,7 +4,7 @@ MoonBit 原生 Git pathspec 文件集合选择引擎。面向构建、打包、�
 
 兼容终点是 **Git 2.43.0 与 2.56.0 的完整公共 pathspec 语法和路径匹配语义**，输入模型为调用者提供的 UTF-8 仓库相对候选文件、当前目录 prefix 和四态属性。0.1.x 的 GPP-1 是历史范围，本轮不再以自行缩小的语法子集作为完成终点。目标、版本差别和责任边界见[兼容说明](docs/COMPATIBILITY.md)。
 
-**0.2.1 已通过完整本地及 Linux/Windows CI。** JS/Wasm GC 各 76 项核心测试、Node 42 项、13 个组合案例，独立解压包 API 两后端各 9 项通过。[原生 Linux Git 2.43.0 / 2.56.0](https://github.com/2111950632/MoonPathspec/actions/runs/45589748234) 各通过 444 项常规差分和 362 项扩展差分；[平台 CI](https://github.com/2111950632/MoonPathspec/actions/runs/45589748354) 的 Windows Git 2.56.1 通过 444 + 361 项。平台专属案例分别标记 not_run，不计为该平台通过。记录见[本地](evidence/validation-0.2.1.json)、[线上](evidence/github-validation-0.2.1.json)。当前准备发布 0.2.1；历史 0.2.0 已发布并[实际下载验证](evidence/mooncakes-validation-0.2.0.json)，旧版证据不证明新增修复已发布。
+**0.2.1 已通过完整本地及 Linux/Windows CI。** JS/Wasm GC 各 76 项核心测试、Node 42 项、13 个组合案例，独立解压包 API 两后端各 9 项通过。[原生 Linux Git 2.43.0 / 2.56.0](https://github.com/2111950632/MoonPathspec/actions/runs/45589748234) 各通过 444 项常规差分和 362 项扩展差分；[平台 CI](https://github.com/2111950632/MoonPathspec/actions/runs/45589748354) 的 Windows Git 2.56.1 通过 444 + 361 项。平台专属案例分别标记 not_run，不计为该平台通过。记录见[本地](evidence/validation-0.2.1.json)、[线上](evidence/github-validation-0.2.1.json)。[Mooncakes 0.2.1](https://mooncakes.io/docs/2111950632/moonpathspec%400.2.1) 已发布，全新独立项目实际下载后两后端各 9 项公开 API 测试通过，7 个生产 MoonBit 源文件及 4 个清单/接口文件逐字节一致，见[下载验证](evidence/mooncakes-validation-0.2.1.json)。旧版证据保留为历史。
 
 解析、匹配、属性条件、路径模式处理、预算和 JSON 诊断均由 MoonBit 实现。Node.js 负责命令行、UTF-8 文件输入输出和运行编译产物；运行时不启动 Git。候选发现、Git index、工作树枚举和 `.gitattributes` 的解析由接入方负责。
 
@@ -64,7 +64,7 @@ PowerShell/Bash 应以单引号保护含特殊字符的规则，避免 shell 提
 
 ## MoonBit API
 
-已发布版本可用 `moon add 2111950632/moonpathspec` 安装；索引未更新时先运行 `moon update`。最近已发布版本 [0.2.0](https://mooncakes.io/docs/2111950632/moonpathspec%400.2.0) 已发布并完成独立网络下载验证；新增 `git_version` 和数值边界修复属于当前 0.2.1 源码，发布状态另行记录。
+已发布版本可用 `moon add 2111950632/moonpathspec` 安装；索引未更新时先运行 `moon update`。当前 [0.2.1](https://mooncakes.io/docs/2111950632/moonpathspec%400.2.1) 已发布并完成独立网络下载验证，包含 `git_version` 与本轮平台/版本边界修复。
 
 在消费项目 `moon.pkg` 导入 `"2111950632/moonpathspec"`：
 
